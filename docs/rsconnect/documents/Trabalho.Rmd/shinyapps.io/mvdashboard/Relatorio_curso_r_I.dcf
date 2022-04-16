@@ -1,0 +1,13 @@
+name: Relatorio_curso_r_I
+title: Relatorio_curso_r_I
+username:
+account: mvdashboard
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6063533
+bundleId: 5786518
+url: https://mvdashboard.shinyapps.io/Relatorio_curso_r_I/
+when: 1649683887.6595
+lastSyncTime: 1649683887.65951
+asMultiple: FALSE
+asStatic: FALSE

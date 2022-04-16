@@ -1,0 +1,1051 @@
+---
+title: "O Brasil nos Jogos Olímpicos de Verão"
+subtitle: "Eventos Olímpicos de 1896 (Atenas) a 2020 (Tóquio)"
+author: "Marcio Vakassugui"
+date: '2022-03-28'
+
+output: 
+  html_document:
+    highlight: zenburn
+    theme: lumen
+    toc: yes
+    toc_float: yes
+    smooth_scroll: no
+    collapsed: yes
+runtime: shiny
+---
+
+```{r setup}
+#| include=FALSE
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE 
+)
+```
+
+<br>
+
+# Contextualização
+
+<div align=justify>O primeiro jogo olímpico da era moderna ocorreu entre 6 de Março e 5 de abril de 1896, em Atenas, e desde então se repetiram em diversas ocasiões premiando os melhores atletas em suas modalidades.
+
+Decidi realizar este trabalho tendo como tema a participação do Brasil nas olimpíadas e como alguns de nossos atletas marcaram suas histórias nestes jogos.
+
+As linhas que seguirão são direcionadas àqueles que como eu adoram história, esportes e linguagem de programação. Por isto, colocarei partes do código e as constatações obtidas a partir da análise dos dados, complementadas com informações encontradas na internet e que ajudarão a entendê-las dentro de um contexto histórico. As respostas às consultas dos códigos deste relatório, mantê-las-ei no formato apresentado no console do RStudio para que o leitor visualize o resultado do código.
+
+Neste projeto, gostaria de vivenciar a dificuldade que encontramos em nosso dia-a-dia quando precisamos preparar uma base de dados por meio de uniões e cruzamentos com outras bases, selecionar, filtrar, agrupar, ordenar os dados e sumarizar os resultados a partir dos conceitos estudados no curso de "linguagem R para Ciência de Dados I", obtendo informações que despertem nos leitores o interesse e a curiosidade sobre os fatos da época e sobre os atletas.
+
+Para tal, utilizei a base de dados do *Kaggle*, plataforma para competições de *Data Science* fundada por **Antony Goldbom** em 2017, [*"120 Years of Olympic History"*](https://www.kaggle.com/datasets/mysarahmadbhat/120-years-of-olympic-history)" disponibilizada por **Mysar Ahmad Bhat**, acessado em 19 de Março de 2022. 
+
+Este *dataset* fornece os dados dos atletas e dos eventos olímpicos desde sua primeira edição em 1896 até os jogos do Rio de Janeiro em 2016, como nome, idade, peso, altura, país, medalha, modalidade, evento, ano, cidade, entre outros.
+
+Resolvi complementá-lo com os dados dos jogos de Tóquio de 2020 por meio do *dataset*, também do *Kaggle*, [*"Tokyo 2020 Olympic Summer Games"*](https://www.kaggle.com/datasets/piterfm/tokyo-2020-olympics), acessado em 23 de Março de 2022, com os 11 mil atletas que participaram da última edição dos jogos.
+
+O resultado foi uma base de dados preparada com todos os jogos olímpicos de verão da era moderna.</div> <br> <br>
+
+# Carregamento das Bibliotecas
+
+```{r bibliotecas usadas}
+#| echo=TRUE
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(knitr)
+library(shiny)
+library(kableExtra)
+library(ggrepel)
+library(here)
+```
+
+<br>
+
+# Leitura da Base de Dados Preparada
+
+<p align = justify>Podemos visualizar a base de dados e suas variáveis para entender melhor o *dataset*.</p>
+
+```{r carregamento_de_dados}
+#| echo=TRUE
+# Carregamento da base   - uso da função here() do pacote here visto no curso
+caminho_com_here <- here("dados","base_dados_definitiva", "olimpiadas_base_limpa.rds")
+dados_agrupados <- read_rds(caminho_com_here)
+dados_agrupados |> 
+  head(3)
+```
+
+<p align = justify>A base de dados possui `r length(dados_agrupados)` variáveis e `r nrow(dados_agrupados)` linhas, com os dados dos atletas de todas as edições olímpicas de verão. Acima visualizamos apenas as três primeiras linhas.</p>
+
+<br>
+
+```{r medalhistas_por_tipo_de_medalhas}
+# Seleção dos dados para o Brasil
+dados_agrupados_brasil <- dados_agrupados |>                  # seleciona apenas os atletas brasileiros
+  filter(noc == "BRA")
+# Seleção dos dados dos atletas medalhistas
+medalhistas_brasil <- dados_agrupados_brasil |>               # filtra os campos preenchidos
+  filter((!is.null(medalha)) & (!is.na(medalha)))
+# Sumarização das quantidades de medalhas consquistadas por todos os atletas agrupadas por tipo de medalha
+medalhistas_por_tipo <- medalhistas_brasil |>
+  group_by(medalha) |>
+  summarise(quantidade = n())                                 # sumariza o resultado pelo número de medalhas
+```
+
+# Análise
+
+<div align = justify>Vamos começar nossa análise descobrindo quantos atletas brasileiros conquistaram medalhas olímpicas. Consideraremos todos os atletas, sejam de esportes coletivos como futebol ou individuais como o salto em distância.
+
+No gráfico abaixo, ao selecionar o tipo de medalha na lista de seleção, teremos a quantidade de medalhas obtidas pelos atletas em seus respectivos intervalos de idades por tipo de medalha.</div>
+
+```{r select_input tipo_de_medalha}
+inputPanel(                     # uso da biblioteca shiny para o input de dados visto no curso de dashboards
+  shiny::selectInput(inputId = "tipo_medalha", label = "Tipo de Medalha", choices = c("Ouro", "Prata", "Bronze")),
+)
+```
+
+```{r quantidade_medalhas_por_tipo}
+intervalo_classes_idade <- round(seq(0, 70, 10), 1)            # vetor para o intervalo de classes de idade
+medalhistas_ouro <- medalhistas_brasil |>
+  filter(medalha == "Gold")                                    # apenas atletas brasileiros com ouro
+
+total_ouro_idade <- plyr::count(cut(medalhistas_ouro$idade,    # intervalos de classes de 0 a 70 anos p/ ouro
+  breaks = intervalo_classes_idade,
+  right = FALSE                                                # inclui o limite inferior e exclui o superior
+))
+
+medalhistas_prata <- medalhistas_brasil |>                     # para os medalhistas de prata
+  filter(medalha == "Silver")
+
+total_prata_idade <- plyr::count(cut(medalhistas_prata$idade,  
+  breaks = intervalo_classes_idade,
+  right = FALSE
+))
+
+medalhistas_bronze <- medalhistas_brasil |>                    # para os medalhistas de bronze
+  filter(medalha == "Bronze" & !is.na(medalha))
+
+total_bronze_idade <- plyr::count(cut(medalhistas_bronze$idade,
+  breaks = intervalo_classes_idade,
+  right = FALSE
+))
+```
+
+```{r output gráficos_quantidades_medalhas_por_tipo}
+output$p1 <- renderPlot({                                      # uso do shiny para output dos resultados
+  if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
+    grafico_medalha_x_idades <- total_ouro_idade |>
+      ggplot(aes(x = x, y = freq, label = freq, fill = x)) +
+      geom_col(na.rm = TRUE, alpha = 0.7) +
+      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
+      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6")) +
+      labs(title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades", subtitle = "Medalhas de Ouro ",
+           fill = "idades") +
+      xlab("Intervalos de Idade") +
+      ylab("Quantidades de Medalhas") +
+      theme_classic()+
+      theme(legend.position = "none",
+            axis.text.x=element_text(size=11),
+            axis.text.y=element_text(size=11))
+    grafico_medalha_x_idades                                   # gera o gráfico para ouro
+  } else if (input$tipo_medalha == "Prata") {                  #  se selecionado prata
+    grafico_medalha_x_idades <- total_prata_idade |>
+      ggplot(aes(x = x, y = freq, label = freq, fill = x))+
+      geom_col(na.rm = TRUE, alpha = 0.7) +
+      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
+      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6")) +
+      labs(
+        title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades", subtitle = "Medalhas de Prata ",
+        fill = "idades"
+      ) +
+      xlab("Intervalos de Idade") +
+      ylab("Quantidades de Medalhas") +
+      theme_classic() +
+      theme(legend.position = "none",
+            axis.text.x=element_text(size=11),
+            axis.text.y=element_text(size=11))
+    grafico_medalha_x_idades                                   # gera o gráfico para prata
+  } else {                                                     # se selecionado bronze
+    grafico_medalha_x_idades <- total_bronze_idade |>
+      ggplot(aes(x = x, y = freq, label = freq, fill = x)) +
+      geom_col(na.rm = TRUE, alpha = 0.7) +
+      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
+      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6", "#AA4586", "#59FFA0")) +
+      labs(
+        title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades", subtitle = "Medalhas de Bronze ",
+        fill = "idades"
+      ) +
+      xlab("Intervalos de Idade") +
+      ylab("Quantidades de Medalhas") +
+      theme_classic()+
+      theme(legend.position = "none",
+            axis.text.x=element_text(size=11),
+            axis.text.y=element_text(size=11))
+    grafico_medalha_x_idades                                   # gera o gráfico para bronze
+  }
+})
+output$t1 <- renderText({        # uso de renderText para inserir mensagen a ser apresentada para cada gráfico
+  if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
+    valor <- 138
+    dez_vinte <- 6
+    vinte_trinta <- 98
+    trinta_quarenta <-32
+    quarenta_cinquenta <- 2
+    
+    glue::glue("Em 124 anos de história dos jogos olímpicos, {valor} atletas conquistaram a medalha de ouro. A maioria entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas também as ganharam com menos de vinte anos, {trinta_quarenta} atletas entre trinta e quarenta anos e {quarenta_cinquenta} atletas com mais de quarenta anos.")                                 # imprime esta mensagem
+
+  } else if (input$tipo_medalha == "Prata") {                 # se selecionado prata
+    valor <- 192
+    dez_vinte <- 16
+    vinte_trinta <- 133
+    trinta_quarenta <-43
+    
+    glue::glue("As medalhas de prata foram conquistadas por {valor} atletas, a maioria também entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas com menos de vinte anos e {trinta_quarenta} atletas entre trinta e quarenta anos.")     # imprime esta mensagem
+  } else {                                                    # se selecionado bronze
+    valor <- 200
+    dez_vinte <- 8
+    vinte_trinta <- 153
+    trinta_quarenta <-32
+    quarenta_cinquenta <- 5
+    cinquenta_sessenta <- 1
+    na_na <- 1
+    
+    glue::glue("Para as medalhas de bronze, a distribuição foi de {dez_vinte} para atletas de dez a vinte anos, {vinte_trinta} para os de vinte a trinta anos, {trinta_quarenta} para os de trinta a quarenta anos, {quarenta_cinquenta} para os atletas de quarenta a cinquenta anos, {cinquenta_sessenta} para um atleta de cinquenta a sessenta anos e {na_na} medalha para um valor NA (ausência de informação). Optei por não excluir este valor.")
+  }                                                         # imprime esta mensagem
+})
+plotOutput("p1", height = "400px")                          # saída do respectivo gráfico p1
+textOutput("t1")                                            # saída do respectivo texto t1
+```
+
+<br>
+
+# Fatos Interessantes
+
+## Sobre os atletas
+
+### Quantos anos tinha?
+
+<div align = justify>Peço ao leitor que, neste momento, retorne ao gráfico anterior e selecione "**bronze**" na lista de seleção. Visualizaremos o gráfico dos atletas que conquistaram o bronze por intervalo de idades e notaremos a existência de **"*uma medalha para um dado NA*"**.
+
+Este fato nos levará à primeira curiosidade interessante encontrada a partir da análise exploratória desta base de dados.
+
+Pelo código abaixo, veremos que valor NA se deve à existência de um atleta medalhista de bronze, cuja idade não foi informada no *dataset*.</div>
+
+```{r medalhistas_bronze_sem_na}
+#| echo=TRUE
+medalhistas_bronze |>
+  filter(is.na(idade)) |>
+  select(nome, cidade, ano)
+```
+
+<div align = justify>Trata-se de **Fernando Soledade**, que foi medalhista em 1920 nos jogos da Antuérpia.
+<p style="color: #7C7287">Segundo o *site* Rede do Esporte,*"encontrar informações sobre o atirador Fernando Soledade tem sido um desafio tanto para os profissionais da Confederação Brasileira de Tiro Esportivo quanto para historiadores que se dedicam a estudar o desempenho dos brasileiros nos Jogos Olímpicos da Antuérpia - 1920. A data de nascimento de Fernando Soledade permanece um mistério. Mas sabe-se que ele era do Rio de Janeiro, onde atuou como médico. Sua marca registrada durante as provas na Antuérpia foi um enorme chapéu de abas, que usava para protegê-lo do sol.*</p>
+
+<p style="color: #7C7287">*Sua atuação nos Jogos de 1920 ajudou o Brasil a conquistar a medalha de bronze por equipe e, ao retornar da competição na Bélgica, Fernando Soledade, junto com os demais atletas que defenderam o Brasil na competição, foi saudado pelo Presidente da República Epitácio Pessoa, pelo esportista e poeta Coelho Neto e pelo Presidente do Fluminense Arnaldo Guinle em uma solenidade realizada no Salão Nobre do Fluminense. Pelo desempenho da equipe de tiro na Antuérpia (o país conquistou um ouro, uma prata e um bronze), cada um dos atiradores recebeu uma placa de prata das mãos do presidente."*</p>
+
+fonte: <http://rededoesporte.gov.br/pt-br/megaeventos/olimpiadas/medalhistas/fernando-soledade>. <br>
+
+<p style="color: #7C7287"> Segundo o *Wikipedia*, *"não há informações sobre o que ocorreu com a vida de Soledade após a olimpíada. Por esse motivo, José Roberto Tolero escolheu Soledade como protagonista de 'Ouro, prata , bronze e ... chumbo!', um curta metragem sobre a equipe de tiro que venceu as primeiras medalhas olímpicas brasileiras. Lançado em 2012, o curta tem o formato de um falso documentário filmado por Soledade, interpretado pelo ator Clayton Bonardi."*</p>
+
+fonte: <https://pt.wikipedia.org/wiki/Fernando_Soledade> </div><br>
+<br>
+
+### O mais jovem.
+
+Continuando nossa análise, vamos sumarizar os dados e então encontrar outras curiosidades sobre os atletas.
+
+```{r sumário_dados}
+#| echo=TRUE
+summary(dados_agrupados_brasil) |>
+  kbl() |>
+  kable_classic(
+    full_width = FALSE,
+    html_font = "Cambria",
+    font_size = 10
+  )
+```
+
+Na coluna **"idade"** da tabela acima, podemos ver que o atleta mais jovem tinha 13 anos de idade.
+
+Podemos descobri-lo usando a função slice_min() do pacote *dplyr* vista no curso.
+
+```{r atleta_mais_baixo}
+#| echo=TRUE
+mais_jovem <- dados_agrupados_brasil |>
+  slice_min(order_by = idade) |> 
+  select(nome, idade, modalidade, ano, cidade) |> 
+  arrange(idade)
+
+mais_jovem
+```
+
+**Raíssa Leal** e **Talita de Alencar Rodrigues** são as mais jovens. Abaixo, temos mais informações sobre elas. <br>
+
+####  {.tabset .tabset-fade}
+
+##### Raissa Leal
+
+<div align = justify><p style="color: #7C7287">Nasceu em 4 de Janeiro de 2008 em Imperatriz/MA. Representou o Brasil nos jogos olímpicos de Tóquio, que começaram no dia 23 de Julho de 2021. Neste momento, tornava-se a **atleta mais jovem do Brasil a participar de uma olimpíada** com treze anos e sete meses. Ao conquistar a medalha de prata, **também a atleta mais jovem da história do Brasil a receber uma medalha**. Raissa também é conhecida como a *"fadinha do skate"*.</p>
+
+fontes: <https://pt.wikipedia.org/wiki/Rayssa_Leal> <br> <https://g1.globo.com/mundo/noticia/2021/07/26/olimpiada-toquio-2021-rayssa-leal-a-fadinha-e-medalhista-mais-jovem-da-historia-em-85-anos-conheca-os-prodigios.ghtml></div> <br> <br>
+
+##### Talita de Alencar Rodrigues
+
+<div align = justify><p style="color: #7C7287">Com 13 anos participou das olimpíadas de 1948 em Londres, quando foi à final dos 4 x 100 metros livres da natação, terminando em sexto lugar, junto com Eleonora Schimidt, Maria da Costa e Piedade Coutinho. Nascida no dia 23 de Agosto de 1934, Rio de Janeiro, foi por muitos anos a atleta brasileira mais jovem a participar de uma olimpíada e é, ainda, **a mais jovem integrante de uma** **delegação olímpica de natação** do Brasil de todos os tempos. Quando os jogos de Londres começaram, Talita tinha 13 anos e 10 meses de idade.</p>
+
+fonte: <https://pt.wikipedia.org/wiki/Talita_Rodrigues#:~:text=Com%2013%20anos%20de%20idade,Brasil%20de%20todos%20os%20tempos>. </div><br>
+
+<br>
+
+### O mais alto e o mais baixo.
+
+<par align = justify>Quando assistimos aos jogos, chama-nos a atenção a estatura dos atletas de basquete e da ginástica olímpica.</par>
+
+```{r os_menores}
+#| echo=TRUE
+mais_baixos <- dados_agrupados_brasil |>                
+  group_by(altura) |>
+  filter(altura <= 145) |>
+  arrange(altura) |> 
+  summarise(nome, idade, altura, ano, cidade, modalidade) |> 
+  head(6)
+mais_baixos
+```
+
+```{r os_maiores}
+#| echo=TRUE
+mais_altoS <- dados_agrupados_brasil |>
+  group_by(altura) |>
+  filter(altura >= 214) |>
+  summarise(nome, idade, altura, ano, cidade, modalidade) |> 
+  arrange(desc(altura) )
+mais_altoS
+
+```
+
+<p align = justify>Os jogadores **Paulo Cesar da Silva** (Paulão) e **Paulo Villas Boas de Almeida** (Paulinho Villas Boas), da seleção de basquete, foram os mais altos. As ginastas  **Flávia Lopes Saraiva** e **Daiane Garcia dos Santos**, da seleção olímpica de ginástica artística, as com menor estatura.</p>
+
+Selecione as abas e os links para ler um pouco mais sobre eles.
+
+####  {.tabset .tabset-fade}
+
+##### Paulo Cesar da Silva
+
+<div align = justify><p style="color: #7C7287">Paulão foi campeão pré-olímpico e atuou ao lado de grandes nomes como Oscar e Marcel. Também teve passagem pelo MMA, ficando conhecido como *Giant Silva*. Radicado atualmente em New Jersey, nos EUA, curte a aposentadoria ao lado da esposa".</p></div>
+
+fonte: <http://sportv.globo.com/site/combate/noticia/2015/08/ex-selecao-de-basquete-e-ex-atleta-de-mma-giant-silva-curte-aposentadoria.html>
+
+##### Paulo Villas Boas de Almeida
+
+<div align = justify><p style="color: #7C7287">Paulinho Villas Boas é basquetebolista com diversas passagens pela seleção. Atualmente, é comentarista da Fox Sports.</p>
+
+fonte: <https://pt.wikipedia.org/wiki/Paulinho_Villas_Boas></div>
+
+##### Flávia Lopes Saraiva
+
+<div align = justify><p style="color: #7C7287">"Flávia obteve inúmeras medalhas em etapas de Copa do Mundo de Ginástica Artística (a maioria delas de ouro). Nos Jogos Olímpicos, Flávia sofreu uma lesão em seu tornozelo na última passada do solo durante as qualificatórias, não completando os aparelhos restantes e tendo se apresentado somente na trave e no solo. Contudo, a ginasta ainda conseguiu se classificar para as finais da trave e, apesar da lesão, competiu e acabou em sétimo lugar."</p>
+
+fonte: <https://pt.wikipedia.org/wiki/Fl%C3%A1via_Saraiva></div>
+
+##### Daiane Garcia dos Santos
+
+<div align = justify><p style="color: #7C7287">Daiane foi a primeira ginasta brasileira, entre homens e mulheres, a conquistar uma medalha de ouro em uma edição do Campeonato Mundial. Disputou as Olimpíadas de Atenas, na qual compareceu à final do solo e encerrou na quinta colocação. Também disputou os Jogos de Pequim no qual foi a duas finais. Por equipes, a atleta foi à primeira final coletiva na história da modalidade do Brasil e encerrou a competição na oitava posição. Individualmente, foi a sexta colocada na final do solo.</p>
+
+fonte:<https://pt.wikipedia.org/wiki/Daiane_dos_Santos></div>
+
+<br> <br> 
+
+### Anatomia e performance.
+<p align = justify>Vimos que em algumas modalidades, como o basquete, os atletas, em sua maioria, possuem características anatômicas predominantes. Mas isto ocorre em todos os esportes? Qual a relação entre anatomia e esporte?</p>
+
+<br>
+
+#### Altura, peso e modalidade.
+Podemos verificar a relação altura, peso e modalidade por meio de gráficos de dispersão.
+
+<p align = justify>Abaixo, temo-las por sexo para os atletas que participaram dos jogos de 2016. Não utilizamos os dados de 2020, porque infelizmente a base "*Tokyo 2020 Olympic Summer Games*" não possui os dados de pesos.</p>
+
+<br>
+
+```{r selectInput sexo_peso_altura_modalidade}
+inputPanel(                                                    # uso do shiny para input dos dados
+  shiny::selectInput(inputId ="sexoid", label = "Atleta Masculino ou Feminino", choices = c("Male", "Female"))
+)
+```
+
+```{r graficos_sexo_peso_altura_modalidade}
+options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso médio x altura média x modalidade
+output$p2 <- renderPlot({
+  if (input$sexoid == "Male") {                               # se selecionado a opção Male
+    peso_altura_modalidade_homens <- dados_agrupados_brasil |> 
+      filter(ano == 2016, sexo == "Male") |> 
+      group_by(modalidade) |> 
+      mutate(media_altura = round(mean(altura, na.rm = TRUE),2),
+             media_peso = round(mean(peso, na.rm = TRUE),2)) |> 
+      distinct(modalidade, media_altura, media_peso) |> 
+      na.exclude() |> 
+      ggplot()+
+      geom_point()+
+      aes(x=media_peso, y = media_altura)+
+      geom_text_repel(aes(label = modalidade, color = modalidade))+
+      labs(x= "Peso Médio (Kg)", y = "Altura Média (m)",
+           title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
+           subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
+      scale_x_continuous(breaks = seq(40,130,5)) +
+      scale_y_continuous(breaks = seq(130,240,5)) +
+      theme_light()+
+      theme(legend.position = "none",
+            axis.text.x=element_text(size=12),
+            axis.text.y=element_text(size=12))
+  peso_altura_modalidade_homens                             # gera o gráfico para o masculino
+    
+  } 
+  else if (input$sexoid == "Female") {                     # se selecionado Female
+    peso_altura_modalidade_mulheres <- dados_agrupados_brasil |> 
+      filter(ano == 2016, sexo == "Female") |> 
+      group_by(modalidade) |> 
+      mutate(media_altura = round(mean(altura, na.rm = TRUE),2),
+             media_peso = round(mean(peso, na.rm = TRUE),2)) |> 
+      distinct(modalidade, media_altura, media_peso) |> 
+      na.exclude() |> 
+      ggplot()+
+      geom_point()+
+      aes(x=media_peso, y = media_altura)+
+      geom_text_repel(aes(label = modalidade, color = modalidade))+
+      labs(x= "Peso Médio (Kg)", y = "Altura Média (m)",
+             title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
+             subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016") +
+      scale_x_continuous(breaks = seq(40,130,5)) +
+      scale_y_continuous(breaks = seq(130,220,5)) +
+      theme_light()+
+      theme(legend.position = "none",
+            axis.text.x=element_text(size=12),
+            axis.text.y=element_text(size=12))
+  peso_altura_modalidade_mulheres                           # gera o gráfico para o feminino
+    
+  }
+})
+plotOutput("p2")                                            # saída do gráfico p2
+```
+
+Qual a importância da anatomia para o desempenho dos atletas?
+
+<div align = justify>Segundo o Observatório do Esporte da Secretaria de Estado de Desenvolvimento  Social - SEDESE - do governo de Minas Gerais, no artigo *"A anatomia dos atletas e a influência nas modalidades esportivas"*, características físicas não bastam para a *performance* do atleta. Outros aspectos também são importantes, como a força dos membros inferiores que permitem bons alcances nos ataques e bloqueios dos jogadores de vôlei ou o controle  e técnica dos líberos, que são especializados na defesa.
+
+Algumas modalidades são mais inclusivas por possuírem diversas categorias como o judô. Do ligeiro ao pesado tem-se atletas de 48 Kg a mais de 150 Kg. Isto posto, podemos entender melhor os gráficos acima.
+
+Os homens da ginástica do trampolim ou os da ginástica artística possuem os menores pesos e alturas médios, pois precisam de potência nas pernas e nos membros superiores, agilidade, flexibilidade e equilíbrio. Os atletas do basquete necessitam altura, braços longos, aptidão coordenativa e habilidade motora.
+
+Observando os dados das atletas femininas, as jogadoras da seleção de voleibol são as mais altas. 
+
+Interessante observar que diferentemente da ginástica artística, na ginástica rítmica as atletas são mais altas. "Elas precisam ser longilíneas, com pernas, braços e mãos longas, quadril e tronco mais curtos que o normal", explica Maria Inês Machado, técnica na delegação de Minas Gerais que disputou os jogos escolares da juventude em 2017.<br> fonte: <https://observatoriodoesporte.mg.gov.br/a-anatomia-dos-atletas-e-a-influencia-nas-modalidades-esportivas/></div>
+
+<br>
+
+#### IMC, idade e modalidade.
+
+E como seria a relação entre o índice de massa corpórea, a idade e a modalidade dos atletas?
+
+Com **distorções**. Observe-as nos gráficos.
+
+<br>
+
+```{r selectInput mediaimc_mediaidade_modalidade}
+inputPanel(                                                    # uso do shiny para input dos dados
+  shiny::selectInput(inputId ="sexoidimc", label = "Atleta Masculino ou Feminino", choices = c("Male", "Female"))
+)
+```
+
+```{r graficos_sexo_imc_idade_modalidade}
+options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso médio x altura média x modalidade
+output$p3 <- renderPlot({
+  if (input$sexoidimc == "Male") {                               # se selecionado a opção Male
+    imc_idade_modalidade_homens <- dados_agrupados_brasil |> 
+      filter(ano == 2016, sexo == "Male" ) |> 
+      group_by(modalidade) |> 
+      mutate(imc = round((peso/(altura/100 * altura/100)),3),
+             media_idade = round(mean(idade, na.rm = TRUE),2),
+             media_imc = round(mean(imc, na.rm = TRUE),2)) |>
+      distinct(modalidade,media_idade, media_imc) |> 
+      na.exclude() |> 
+      ggplot()+
+      geom_point()+
+      aes(x=media_idade, y = media_imc)+
+      geom_hline(yintercept = 18.6, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#6BA368")+
+      geom_hline(yintercept = 24.9, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#6BA368")+
+      geom_hline(yintercept = 29.9, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#BA1200")+
+      geom_hline(yintercept = 39.9, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#470063")+
+      geom_text_repel(aes(label = modalidade, color = modalidade))+
+      labs(x= "Idade (anos)", y = expression(IMC~(kg/m^2)),
+           title ="Relação de IMC e Idade por Modalidade Esportiva",
+           subtitle = "Dados para Atletas Masculinos") +
+      scale_x_continuous(breaks = seq(10,50,2)) +
+      scale_y_continuous(breaks = seq(10,45,2)) +
+      theme_light()+
+      theme(legend.position = "none")+
+      annotate("text", x=44, y=21.5, label = "Peso Normal")+
+      annotate("text", x=44, y=27, label = "Sobrepeso")+
+      annotate("text", x=43.5, y=35.5, label = "Obesidade Grau 1")
+  
+imc_idade_modalidade_homens
+}
+  else if (input$sexoidimc == "Female") {                     # se selecionado Female
+    imc_idade_modalidade_mulheres <- dados_agrupados_brasil |> 
+      filter(ano == 2016, sexo == "Female" ) |> 
+      group_by(modalidade) |> 
+      mutate(imc = round((peso/(altura/100 * altura/100)),3),
+             media_idade = round(mean(idade, na.rm = TRUE),2),
+             media_imc = round(mean(imc, na.rm = TRUE),2)) |>
+      distinct(modalidade,media_idade, media_imc) |> 
+      na.exclude() |> 
+      ggplot()+
+      geom_point()+
+      aes(x=media_idade, y = media_imc)+
+      geom_hline(yintercept = 18.6, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#6BA368")+
+      geom_hline(yintercept = 24.9, 
+                 size = 0.5,
+                 linetype = 2,
+                 colour = "#6BA368")+
+      geom_text_repel(aes(label = modalidade, color = modalidade))+
+      labs(x= "Idade (anos)", y = "IMC (kg/m2)",
+           title ="Relação de IMC e Idade por Modalidade Esportiva",
+           subtitle = "Dados para Atletas Femininos") +
+      scale_x_continuous(breaks = seq(18,50,2)) +
+      scale_y_continuous(breaks = seq(18,25,2)) +
+      theme_light()+
+      theme(legend.position = "none")+
+      annotate("text", x=42, y=21.75, label = "Peso Normal")+
+      annotate("text", x=42, y=18.25, label = "Abaixo do Peso")
+  
+imc_idade_modalidade_mulheres
+  }
+})
+plotOutput("p3")                                            # saída do gráfico p3
+```
+
+
+<div align = justify>No masculino, modalidades como canoagem, handebol, basquete, pólo aquático, rugbi e judô teriam seus atletas com sobrepeso e as modalidades de *"wrestling"* (luta greco-romana e luta livre) e levantamento de peso como "obesidade de grau 1". 
+
+No feminino, embora quase todas as atletas estivessem  com o IMC normal, as da ginástica rítmica e do *taekwondo* seriam classificadas como "abaixo do peso".
+
+Logo, podemos verificar que o índice de massa corpórea (IMC) parece não fazer sentido quando avaliado em atletas, principalmente por não considerar a percentagem de massa muscular.</div>
+
+<br>
+
+### O primeiro brasileiro.
+```{r primeiro_brasileiro}
+#| echo=TRUE
+primeiro_brasileiro <- dados_agrupados_brasil |> 
+  slice_min(order_by = ano) |> 
+  select(nome, idade, modalidade, ano, cidade, evento) |> 
+  arrange(ano)
+
+primeiro_brasileiro
+```
+<div align = justify>Quando analisei a primeira participação brasileira nos jogos olímpicos, encontrei dados de Adolphe Christiano Klingelhoefer. Entretanto, a primeira participação do Brasil com o comite olímpico brasileiro (COB) foi em 1920, pois o COB foi criado em 1914. 
+
+<p style="color: #7C7287">De acordo com a reportagem do Globo Esporte, Adolphe Christiano Klingelhoefer com vinte anos participou dos jogos de Paris. Nascido em 2 de maio de 1880 na França, foi filho de um vice-cônsul brasileiro. </p>
+
+<p style="color: #7C7287">Naquele tempo, o artigo 6º da Constituição de 1824 dizia que *"são cidadãos brasileiros os filhos de pai brasileiro, que estiverem em país estrangeiro em serviço do Império, embora não venham estabelecer domicílio no Brasil"*</p>
+
+<p style="color: #7C7287">De posse de sua nacionalidade brasileira, Adolphe competiu na Olimpíada de Paris nas provas de atletismo de 60 metros, 200 metros e nos 110 metros com barreira, mas não avançou para as finais em nenhuma delas.</p>
+
+<p style="color: #7C7287">Segundo o Comitê Olímpico Internacional (COI), *"um atleta brasileiro (e não o Brasil) competiu nas Olimpíadas de 1900 sob as cores de um clube francês*.</p>
+
+<dav align = justify><p>fonte: https://interativos.globoesporte.globo.com/olimpiadas/materia/adolphe </p></dav>
+
+<br>
+
+### As primeiras mulheres.
+
+```{r primeiras_mulheres}
+#| echo=TRUE
+primeiras <- dados_agrupados_brasil |>
+  group_by(ano, sexo) |>
+  filter(sexo == "Female") |>
+  select(nome, sexo, idade, modalidade, ano, cidade) |> 
+  arrange(ano) |>
+  head(5)
+primeiras
+```
+
+####  {.tabset .tabset-fade}
+
+<p align = justify>Maria Emma Hulda Lenk Ziegler foi a primeira atleta da natação a competir em uma edição olímpica. Maria Lenk, Piedade Coutinho Tavares da Silva, Helena de Moraes Salles, entre outras, também marcaram suas passagens na história como as primeiras mulheres da natação a representar nosso país. Maria Lenk e Piedade Coutinho tiveram uma destacada carreira internacional, conquistando vários títulos.</p>
+
+##### Maria Emma Hulda Lenk Ziegler
+
+<dav align = justify><p style="color: #7C7287">A natação teve as primeiras atletas olímpicas. "No início dos anos 40, o então presidente Getúlio Vargas editou o artigo 54 do Decreto-Lei 3.199, e proibiu a prática de esportes pelas mulheres. A nadadora foi a única mulher da delegação sul-americana que fez uma excursão pelos Estados Unidos. Em solo norte-americano, ela quebrou 12 recordes estadunidenses e concluiu o curso de educação física na Universidade de Illinois. Dois anos mais tarde, Maria ajudou a fundar a Escola Nacional de Educação Física da Universidade do Brasil, atual Universidade Federal do Rio de Janeiro.</p></dav>
+
+<dav align = justify><p style="color: #7C7287">Em 1988, Maria Lenk foi incluída no Hall Internacional da Fama da Natação, tornando-se assim a primeira atleta brasileira a alcançar tal feito. Doze anos depois, ela recebeu a Ordem Olímpica, honraria concedida pelo COI aos maiores atletas de todos os tempos. Em 2007, com 92 anos de idade, a nadadora veio a falecer no dia 16 de abril".</p></dav>
+
+fonte: <https://www.avalara.com/br/pt/blog/2021/10/mulheres-extraordinarias-maria-lenk.html#>.
+
+##### Piedade Coutinho Tavares da Silva
+
+<dav align = justify><p style="color: #7C7287">Em 1935, participou do campeonato brasileiro e sul-americano, primeiros eventos para natação com mulheres. Na Olimpíada de Berlim, terminou em quinto lugar nos 400 metros livre, resultado igualado apenas após 68 anos por Joana Maranhão. Na Olimpíada de Londres em 1948, chegou a duas finais, terminando em sexto nos 400 metros livre e sexto no 4 x 100 metros livre, juntamente com Eleonora Schimidt, Maria da Costa e Talita Rodrigues. Aos 32 anos de idade, Piedade Coutinho participou da Olímpíada de Helsinque em 1952, competindo nos 400 metros livres, mas não chegou à final.</p></dav>
+
+fonte: <https://pt.wikipedia.org/wiki/Piedade_Coutinho>
+
+<br> <br>
+
+### Os maiores medalhistas.
+
+Os atletas com os maiores números de medalhas são da vela.
+
+```{r maiores_medalhistas}
+#|echo=TRUE
+maiores_medalhistas <- medalhistas_brasil |>
+  group_by(nome) |>
+  summarise(quantidade = n()) |>
+  arrange(desc(quantidade)) |>
+  head(2) |> 
+  kbl() |>
+  kable_paper(
+    full_width = FALSE,
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    html_font = "Cambria",
+    font_size = 14,
+    position = "left"
+  )
+
+maiores_medalhistas
+```
+
+```{r dados_maiores_medalhistas}
+torben <- medalhistas_brasil |>
+  group_by(nome, medalha, evento,cidade, modalidade, ano) |>
+  filter(nome == "Torben Schmidt Grael") |>
+  summarize(nome,medalha) |> 
+  rename("NOME"="nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
+
+scheidt <- medalhistas_brasil |>
+  group_by(nome, medalha, evento,cidade, modalidade, ano) |>
+  filter(nome == "Robert Scheidt") |>
+  summarize(nome, medalha) |> 
+  rename("NOME"="nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
+
+# Consolidade os resultados em uma tabela para o relatório----------------------------------------------------
+maiores_medalhistas_brasileiros <- bind_rows(torben, scheidt)
+
+```
+
+```{r tabela_maiores_medalhistas}
+#| echo=TRUE
+dados_maiores_medalhistas_brasil <- maiores_medalhistas_brasileiros |> 
+  kbl() |>
+  kable_paper(
+    full_width = TRUE,
+    html_font = "cambria",
+    font_size = 12,
+    position = "center"
+  ) |> 
+  pack_rows("Torben", 1, 5, label_row_css = "background-color:#F5F5F5;color:#71B3EA;") |> 
+  pack_rows("Scheidt", 6, 10, label_row_css = "background-color:#F5F5F5;color:#71B3EA;")
+
+dados_maiores_medalhistas_brasil
+```
+
+<br>
+
+## Sobre as equipes
+
+<br>
+
+### Quantas medalhas o país obteve por modalidades ao longo da história?
+
+<br>
+
+#### Total Medalhas por ano {.tabset .tabset-fade}
+
+##### Gráfico de Medalhas
+
+```{r medalhas_por_modalidade}
+medalhas_modalidade <- medalhistas_brasil |>
+  group_by(ano) |>
+  distinct(evento, medalha) |>
+  summarise(quantidade = n()) |>
+  arrange(desc(ano))
+```
+
+<br>
+
+```{r medalhas_por_ano}
+inputPanel(
+  "Recorde de medalhas em 2020/2021!!!")
+```
+
+```{r grafico_medalhas_edicao_modalidade,}
+#| fig.height=5,
+#| fig.width = 10,
+#| fig.align="center",
+#| echo=FALSE
+
+library(grid)
+grafico_medalhas_modalidade <- medalhas_modalidade |>
+  ggplot(aes(x = ano, y = quantidade, label = ano)) +
+  geom_line(
+    size = 1,
+    colour = "#54C6EB"
+  ) +
+  geom_point(
+    shape = "circle",
+    colour = "#2D3047"
+  )+
+  geom_text(aes(label = quantidade),
+    hjust = 1, vjust = -0.7
+  ) +
+  geom_segment(
+    aes(x = 2000,
+        y= 20,
+        xend = 2006,
+        yend = 17.5),
+    size = 0.3,
+    arrow = arrow(length = unit(0.3, "cm")), colour="#508AA8",
+    inherit.aes=FALSE, lwd=2)+
+  geom_segment(
+    aes(x = 1985,
+        y= 20,
+        xend = 2000,
+        yend = 20),
+    size = 0.5,
+    colour="#508AA8",
+    inherit.aes=FALSE, lwd=2)+
+  coord_cartesian(xlim = c(),ylim = c(0, 24))+
+  annotate("text", x=1958, y=20, label = "Selecione acima a aba 'tabela de medalhas' para informação
+           sobre este ponto")+
+  scale_x_continuous(breaks = seq(1896, 2020,4)) +
+  scale_y_continuous(breaks = seq(0,25,1)) +
+  labs(title = "Quantidade de Medalhas por Edição dos Jogos", subtitle = "Total de Medalhas") +
+  xlab("Ano") +
+  ylab("Quantidade")+
+  theme_bw()+
+  theme(legend.position = "none",
+            axis.text.x=element_text(size=10),
+            axis.text.y=element_text(size=10))
+
+grafico_medalhas_modalidade
+```
+
+```{r texto_desempenho}
+#| echo=FALSE
+output$t2 <- renderText({
+" Foram várias conquistas desde Antuérpia 1920, quando conquistamos nossas três primeiras medalhas. O Brasil participou de 24 olimpíadas, conquistando 150 medalhas.
+  A evolução nos últimos quadriênios é destacável. Nas últimas sete olimpíadas, conquistamos 111, ou seja, 74% do total de medalhas."
+})
+textOutput("t2")
+```
+
+```{r grafico_medalhas_edicao_modalidade_sexo,}
+#| fig.height=5,
+#| fig.width = 10,
+#| fig.align="center",
+#| echo=FALSE
+
+library(grid)
+medalhas_masculino_feminino <- medalhistas_brasil |>
+  group_by(sexo) |>
+  distinct(evento, modalidade, sexo, ano, medalha) |>
+  summarise(ano) |>
+  ungroup() |>
+  group_by(sexo, ano) |>
+  summarise(qtde = n()) |>
+  ggplot(aes(x = ano, y = qtde, color = sexo)) +
+  geom_line(
+    size = 1
+  ) +
+  geom_point(
+    shape = "circle",
+    color = "#56638A"
+  ) +
+  geom_text(aes(label = qtde),
+    hjust = 1, vjust = -0.7,
+    colour = "black"
+  ) +
+  coord_cartesian(xlim = c(),ylim = c(0, 16))+
+  labs(
+    title = "Quantidade de Medalhas por Edição dos Jogos ",
+    subtitle = "Medalhas Separadas por Sexo", x = "Ano",
+    y = "Quantidade"
+  ) +
+  scale_x_continuous(breaks = seq(1896, 2020, 4)) +
+  scale_y_continuous(breaks = seq(0, 22, 1)) +
+  scale_color_manual(values = c("#9DC0BC", "#BBB6DF")) +
+  scale_color_discrete(label = c("Feminino", "Masculino"))+
+  theme_bw()+
+  theme(legend.position = "bottom",
+            axis.text.x=element_text(size=10),
+            axis.text.y=element_text(size=10))
+
+medalhas_masculino_feminino
+```
+
+<br>
+
+```{r texto_desempenho_feminino}
+#| echo=FALSE
+output$t3 <- renderText({
+" Também é notável o crescimento do número de medalhas femininas. Em 1996 foram quatro medalhas das dez conquistadas (25%) e em 2020 foram 9 das 21 (43%)."
+})
+textOutput("t3")
+```
+
+##### Tabela de Medalhas
+
+```{r texto_input_panel}
+inputPanel(
+  "Quantas medalhas em 2008?")
+```
+
+<br>
+
+```{r total_medalhas_tabela}
+#| echo=TRUE
+kbl(medalhistas_brasil |>
+  group_by(ano) |>
+  distinct(evento,medalha) |>
+  summarise(quantidade = n()) |>
+  arrange(desc(ano))) |> 
+  kable_styling(
+     full_width = FALSE,
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    html_font = "Cambria",
+    font_size = 14.5,
+    position = "float_right",
+    htmltable_class = "NULL",
+  ) 
+```
+
+<br>
+
+```{r sidebarlayout input_ano_output_tabela}
+fluidPage(                                            # uso do shiny para selecionar o ano olímpico
+  sidebarLayout(      # uso do sidebarloyout (input a esquerda e output à direita do interface do usuário)
+    sidebarPanel = sidebarPanel(           # para o input à esquerda da interface
+      shiny::selectInput(
+        inputId = "ano",
+        label = "Informe o ano da olimpíada",
+        choices = c(
+          1920, 1948, 1952, 1956, 1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992,
+          1996, 2000, 2004, 2008, 2012, 2016, 2020
+        )
+      ),
+      "*vide nota1 sobre 2008",
+      width = 4
+    ),
+    mainPanel = mainPanel(                 # para o output à direita da interface
+      fluidRow(
+        column(
+          width = 8,
+          offset = 3,
+          output$tab2 <- renderTable({
+            medalhas_modalidade_brasil_2016 <- medalhistas_brasil |>
+              group_by(modalidade) |>
+              filter(ano == input$ano) |>
+              select(modalidade, medalha, evento) |>
+              distinct(modalidade, evento, medalha) |>
+              summarise(qtde_modalidades = n())
+            medalhas_modalidade_brasil_2016
+          },
+          align = "r",),
+          output$tab3<- renderTable({
+             quantidade_medalhas <- medalhistas_brasil |>
+              group_by(medalha) |>
+              filter(ano == input$ano) |>
+              select(modalidade, medalha, evento) |>
+              distinct(modalidade, evento, medalha) |>
+              summarise(qtde_medalhas = n())
+             quantidade_medalhas
+          },
+          align = "r",
+          width = "259px")
+        )
+      ),
+      width = 4
+    ),
+  )
+)
+```
+
+<br>
+
+<dav align = justify><p style="color: #7C7287"> __\*Nota1__: Em Pequim 2008, nosso país conquistou **17 medalhas olímpicas e não 16**, sendo 3 de ouro, 4 de prata e 10 de bronze. A base de dados está desatualizada, porque no dia 31 de Outubro de 2019, a equipe brasileira de atletismo no revezamento 4 x 100 metros recebeu a medalha de bronze conquistada nos jogos olímpicos de Pequim, onze anos após a disputa da prova. Naquela ocasião, a equipe jamaicana ganhou a medalha de ouro, porém em 2018 foi confirmado o *doping* do atleta jamaicano Nesta Carter.</p></dav>        
+
+<p align=left>fonte: <https://www.cob.org.br/pt/cob/time-brasil/brasil-nos-jogos/medalhas-olimpicas> </p> 
+
+<br>
+
+### Quantidade de atletas e quantidade de medalhas conquistadas.
+
+<p align = justify>Nas últimas Olimpíadas conquistamos mais de 70% do total de medalhas. Existiria relação entre a quantidade de atletas participantes por evento e a quantidade de medalhas obtidas por edição olímpica?</p>
+
+```{r medalhas_quantidade _tletas}
+#| echo=FALSE
+# função que recebe como parâmetro o ano da edição olímpica e retorno o total de medalhas conquistadas
+qtde_medalhas_edicao <- function(edicao) {
+  qtde_medalhas <- medalhistas_brasil |> 
+    group_by(medalha) |>
+    filter(ano == edicao) |>
+    distinct(evento, modalidade, medalha) |> 
+    nrow()
+  return(qtde_medalhas)
+}
+
+# atletas por edição olímpica (todos os atletas e não apenas os medalhistas)
+# função que recebe como parâmetro o ano da edição olímpica e retorna o total de atletas na edição
+qtde_atletas_edicao <- function(edicao) {               
+  qtde_atletas <- dados_agrupados_brasil |> 
+    group_by(nome) |>
+    filter(ano == edicao) |> 
+    nrow()
+  return(qtde_atletas)                                   
+}
+
+```
+
+```{r medalha_quantidade_atletas_tibble}
+#| echo=FALSE
+# obter os dados para cada edição olímpica
+qtde_atletas_vetor <- c()                         # cria o vetor total de atletas de uma edição
+qtde_medalhas_vetor <- c()                        # cria o vetor total de medalhas de uma edição
+
+# laço que alimenta os vetores com os elementos (atletas e medalhas) para cada edição olímpica
+for (i in seq(from = 1896, to = 2020, by = 4)){
+  qtde_atletas_para_vetor <- qtde_atletas_edicao(i)
+  qtde_atletas_vetor <- append(qtde_atletas_vetor, qtde_atletas_para_vetor)
+  qtde_medalhas_para_vetor <- qtde_medalhas_edicao(i)
+  qtde_medalhas_vetor <- append(qtde_medalhas_para_vetor, qtde_medalhas_vetor)
+}
+
+# montar a base com os resultados obtidos
+# temos que inverter a ordem dos elementos do vetor com os dados da medalhas por ano
+qtde_medalhas_vetor <- rev(qtde_medalhas_vetor)
+
+# corrigir o valor de medalhas da olimpíada de 2008, de 16 medalhas para 17 medalhas
+qtde_medalhas_vetor[29] <- 17
+
+# vetor dos anos dos eventos
+anos_vetor <- seq(from = 1896, to = 2020, by = 4) 
+
+# renomear as variáveis 
+medalhas_atletas <- tibble(anos_vetor, qtde_atletas_vetor, qtde_medalhas_vetor) |> 
+  rename("ANO" = "anos_vetor", "TOTAL_ATLETAS" = "qtde_atletas_vetor", "TOTAL_MEDALHAS" = "qtde_medalhas_vetor")
+
+```
+
+```{r medalha_quantidade_atletas_grafico}
+#| echo=TRUE,
+#| fig.height=5,
+#| fig.width = 10,
+#| fig.align="center",
+#| echo=TRUE
+
+# gráfico de dispersão entre medalhas e atletas
+medalhas_atletas <- medalhas_atletas |> # excluir da visualização os anos sem participação do Brasil
+  slice(-(1:6))
+
+medalhas_atletas <- medalhas_atletas |> 
+  slice(-(6:7))                         # excluir 1940 e 1944, anos sem jogos por causa da 2º guerra
+
+medalhas_atletas |> 
+  ggplot()+
+  aes(x=TOTAL_ATLETAS, y = TOTAL_MEDALHAS)+
+  geom_smooth(method = "lm")+
+  geom_point(
+    shape = "circle", size = 2.5, colour = "#508AA8"
+  ) +
+  geom_text_repel(aes(label = ANO))+
+  coord_cartesian(xlim = c(),ylim = c(0, 23))+
+  scale_x_continuous(breaks = seq(0,600,25)) +
+  scale_y_continuous(breaks = seq(0,24,1)) +
+  labs(title = "Quantidade de Medalha por Atletas",
+       subtitle = "A linha azul indica uma relação direta de proporcionalidade") +
+  xlab("Total de Atletas por Edição") +
+  ylab("Quantidade de Medalhas")+
+  theme_bw()+
+  theme(legend.position = "none",
+            axis.text.x=element_text(size=10),
+            axis.text.y=element_text(size=10))
+  
+```
+
+```{r correlacao_pearson}
+#| echo=FALSE,
+#| eval=FALSE
+
+# calcular o coeficiente de correlação de Pearson
+coef_correlacao <- cor(medalhas_atletas$TOTAL_ATLETAS, medalhas_atletas$TOTAL_MEDALHAS,
+  method = "pearson"
+) |>
+  round(3)
+
+coef_correlacao
+```
+
+<div align = justify>Observa-se que quanto maior o número de atletas nas delegações brasileiras, maiores também foram as quantidades de medalhas obtidas. Entretanto, imagino que outros fatores como o produto interno bruto do país, ou o índice de desenvolvimento humano, ou o número de habitantes, ou a política pública para os esportes, ou a prática esportiva nas escolas também exerçam forte influência na quantidade de medalhas obtidas. 
+
+Um bom tema para um trabalho futuro de Análise de Dados.</div>
+
+<br>
+
+## Para consultas rápidas
+
+<div align = justify>Abaixo, disponibilizamos uma tabela para consulta rápida dos dados dos atletas brasileiros que participaram de um ou mais evento olímpico a partir de uma palavra chave. Assim, é possível encontrar as informações dos atletas que citamos neste relatório.</div>
+
+```{r display_data}
+#| echo=TRUE,
+#| out.width=20
+dados_agrupados_brasil <- dados_agrupados_brasil |> 
+  select(-time, -evento)                              # excluir as colunas menos relevantes
+
+DT::renderDataTable(dados_agrupados_brasil, 
+                    options = list(
+                      pageLength = 3)
+                    )
+
+```
+
+<br>
+
+# Material de apoio
+- Temas para RMarkdown por [Andrew Ziefler](https://www.datadreaming.org/post/r-markdown-theme-gallery/)
+- Personalização de tabelas com kableExtra por [Hao Zhu](https://haozhu233.github.io/kableExtra/awesome_table_in_html.html)
+- Livro sobre R - [Ciência de dados em R - Curso R](https://livro.curso-r.com/)
+
+<br>
+
+# Conclusão
+
+<div align = justify>Neste trabalho, procurei reproduzir as dificuldades que encontramos quando analisamos um fato ou um problema e precisamos encontrar ou coletar os dados, prepará-los, descrevê-los, explorá-los, entendê-los e por fim apresentar as respostas às questões que nos conduzem à solução do problema ou ao entendimento do fato.
+
+Para que isto fosse possível, foi necessário o estudo e o uso das ferramentas aprendidas no Curso de Linguagem R para Ciência de Dados I. 
+
+Importei a base de dados e complementei-a com outras bases, realizei a manipulação por meio das funções do pacote *tidyverse* que permitiram agrupar, filtrar, selecionar, ordenar, criar e excluir dados e visualizei os resultados com os gráficos construídos a partir das funções do pacote *ggplot2*. Todas estas ferramentas foram abordadas no curso e permitiram gerar informações a partir dos dados brutos do *dataset*,  possibilitando que, ao longo da análise exploratória, eu entendesse estas informações e respondesse às questões levantadas em cada tópico, relembrando os grandes feitos e as curiosidade de nossos atletas e apresentando este relatório em RMarkdown.
+
+Espero que a leitura tenha sido agradável.
+
+Aguardemos, então, as Olimpíadas de Paris, 2024, com novos fatos, dados e conquistas.</div>
+
+<br> <br> <br>
+
+```{r}
+#| fig,align = "right",
+#| out.width = "15%%"
+include_graphics("https://i0.wp.com/www.bookofthrees.com/wp-content/uploads/2016/12/citius.jpg?w=720&ssl=1")
+```
+
+<p style="font-size:12px;">*Citius, altius, fortius*, traduzida para "mais rápido, *"mais alto e mais forte"* é o lema dos jogos Olímpicos, criada pelo **padre Henri Didon** e introduzida pelo **Barão de Coubertin**. </p>
+
