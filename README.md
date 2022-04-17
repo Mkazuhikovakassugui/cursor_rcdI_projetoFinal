@@ -1,10 +1,5 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# cursor_rcdI_projeto_final
-
-<!-- badges: start -->
-<!-- badges: end -->
+# Projeto Final do Curso “R para Ciência de Dados I - Curso R”
 
 O projeto_final é um trabalho de conclusão do curso “R para Ciência de
 Dados I” da Curso-R. Este trabalho tem por objetivo demonstrar a partir
@@ -13,3 +8,31 @@ recursos de pacotes como “dplyr”, “ggplot2”, “read_r”, entre outros,
 permitem a realização de manipulação de dados, construção de
 visualizações gráficas e leitura de bases. A apresentação dos resultados
 é realizada por meio de um relatório em formato .Rmd (RMarkdown).
+
+> Status: Concluído
+
+## Campos do projeto/trabalho
+
+-   Contextualização
+-   Carregamento das Bibliotecas
+-   Leitura da Base de Dados
+-   Análise
+-   Fatos Interessantes
+-   Material de Apoio
+-   Conclusão
+
+## Pacotes Utilizados
+
+-   *Dplyr*
+-   *readr*
+-   *ggplot2*
+-   *knitr*
+-   *shiny*
+-   *kableExtra*
+-   *ggrepel*
+-   *here*
+
+## Contato
+
+-   Nome: Marcio Vakassugui
+-   email: <marcio.kazuhiko.vakassugui@gmail.com>

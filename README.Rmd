@@ -16,7 +16,7 @@ A apresentação dos resultados é realizada por meio de um relatório em format
 
 > Status: Concluído
 
-## Campos do projeto
+## Campos do projeto/trabalho
 + Contextualização
 + Carregamento das Bibliotecas
 + Leitura da Base de Dados
