@@ -16,7 +16,11 @@ A apresentação dos resultados é realizada por meio de um relatório em format
 
 > Status: Concluído
 
+<<<<<<< HEAD
 ## Campos do projeto/trabalho
+=======
+## Campos do projeto
+>>>>>>> 233975036eed23f0f024fc98d331293dbb69b591
 + Contextualização
 + Carregamento das Bibliotecas
 + Leitura da Base de Dados
@@ -37,4 +41,11 @@ A apresentação dos resultados é realizada por meio de um relatório em format
 
 ## Contato
 + Nome: Marcio Vakassugui
+<<<<<<< HEAD
 + email: marcio.kazuhiko.vakassugui@gmail.com
+=======
++ email: marcio.kazuhiko.vakassugui@gmail.com
+
+
+
+>>>>>>> 233975036eed23f0f024fc98d331293dbb69b591
