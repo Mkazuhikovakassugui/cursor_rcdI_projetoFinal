@@ -136,33 +136,64 @@ total_bronze_idade <- plyr::count(cut(medalhistas_bronze$idade,
 output$p1 <- renderPlot({                                      # uso do shiny para output dos resultados
   if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
     grafico_medalha_x_idades <- total_ouro_idade |>
-      ggplot(aes(x = x,
-                 y = freq,
-                 label = freq,
-                 fill = x
-                 )
-             ) +
-      geom_col(na.rm = TRUE,
-               alpha = 0.7
-               ) +
-      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6"
-                                   )
-                        ) +
-      labs(title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades",
-           subtitle = "Medalhas de Ouro ",
-           fill = "idades"
-           ) +
-      xlab("Intervalos de Idade"
-           ) +
-      ylab("Quantidades de Medalhas"
-           ) +
-      theme_economist()+
-      theme(legend.position = "none",
-            axis.text.x=element_text(size=11),
-            axis.text.y=element_text(size=11)
+      ggplot(
+        aes(x = x,
+            y = freq,
+            label = freq,
+            fill = x
             )
+        ) +
+      geom_col(
+        na.rm = TRUE,
+        alpha = 0.7
+        ) +
+      scale_fill_manual(
+        values = c(
+          "#0085C8",
+          "#F3C200",
+          "#009E3C",
+          "#E00024",
+          "#000000"
+          )
+        ) +
+      labs(
+        title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades
+        ",
+        subtitle = "Medalhas de Ouro ",
+        fill = "idades"
+        ) +
+      xlab(
+        "
+        Intervalos de Idade"
+         ) +
+      ylab(
+        "Quantidades de Medalhas
+        "
+        ) +
+      theme_economist(
+        )+
+      theme(
+        text = element_text(
+          family = "Rio 2016"
+          ),                                               # define a fonte para todos os textos
+        title = element_text(
+          size = 15,
+          color = 
+          ),                                               # tamanho da fonte do título = 13
+        legend.position = "none",
+        axis.text.x=element_text(
+          size=11
+          ),
+        axis.text.y=element_text(
+          size=11
+          ),
+        plot.title = element_text(
+          hjust = 0.5
+          )
+        )
     
     grafico_medalha_x_idades                                   # gera o gráfico para ouro
+    
   } else if (input$tipo_medalha == "Prata") {                  #  se selecionado prata
     grafico_medalha_x_idades <- total_prata_idade |>
       ggplot(aes(x = x, 
