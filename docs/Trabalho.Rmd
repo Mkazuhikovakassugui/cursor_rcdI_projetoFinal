@@ -58,6 +58,7 @@ library(ggrepel)
 library(here)
 library(gridExtra)
 library(ggthemes)
+library(cowplot)
 source("../R/tema_olimpiadas.R")
 
 ```
@@ -148,6 +149,12 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         na.rm = TRUE,
         alpha = 1
         ) +
+      geom_label(
+        size = 4, 
+        alpha = 0.5,
+        nudge_y = 7, 
+        show.legend = FALSE
+        ) +
       cores_olimpiadas(
         ) +
       labs(
@@ -188,7 +195,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
       geom_label(
         size = 4, 
         alpha = 0.5,
-        nudge_y = 4, 
+        nudge_y = 7, 
         show.legend = FALSE
         ) +
       cores_olimpiadas(
@@ -228,7 +235,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
       geom_label(
         size = 4, 
         alpha = 0.5,
-        nudge_y = 4,
+        nudge_y = 7,
         show.legend = FALSE
         ) +
       cores_olimpiadas(
@@ -499,11 +506,12 @@ output$p2 <- renderPlot({
         )+
       labs(
       x= "
-           Peso Médio (Kg)",
+      Peso Médio (Kg)",
            y = "Altura Média (m)
-           ",
+      ",
       title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
-      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
+      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016
+      ") +
       scale_x_continuous(breaks = seq(40,130,5)) +
       scale_y_continuous(breaks = seq(130,240,5)) +
       theme_stata(
@@ -547,8 +555,10 @@ output$p2 <- renderPlot({
           )
         )+
       labs(
-        x= "Peso Médio (Kg)",
-        y = "Altura Média (m)",
+        x= "
+        Peso Médio (Kg)",
+        y = "Altura Média (m)
+        ",
         title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
         subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016
            ") +
@@ -638,13 +648,15 @@ output$p3 <- renderPlot({
                  linetype = 2,
                  colour = "#470063")+
       geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "Idade (anos)", y = expression(IMC~(kg/m^2)),
+      labs(x= "
+           Idade (anos)", y = expression(IMC~(kg/m^2)),
            title ="Relação de IMC e Idade por Modalidade Esportiva",
-           subtitle = "Dados para Atletas Masculinos") +
+           subtitle = "Dados para Atletas Masculinos
+           ") +
       scale_x_continuous(breaks = seq(10,50,2)) +
       scale_y_continuous(breaks = seq(10,45,2)) +
-      theme_light()+
-      theme(legend.position = "none")+
+      theme_stata()+
+      tema_olimpiadas()+
       annotate("text", x=44, y=21.5, label = "Peso Normal")+
       annotate("text", x=44, y=27, label = "Sobrepeso")+
       annotate("text", x=43.5, y=35.5, label = "Obesidade Grau 1")
@@ -672,13 +684,15 @@ imc_idade_modalidade_homens
                  linetype = 2,
                  colour = "#6BA368")+
       geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "Idade (anos)", y = "IMC (kg/m2)",
+      labs(x= "
+           Idade (anos)", y = "IMC (kg/m2)",
            title ="Relação de IMC e Idade por Modalidade Esportiva",
-           subtitle = "Dados para Atletas Femininos") +
+           subtitle = "Dados para Atletas Femininos
+           ") +
       scale_x_continuous(breaks = seq(18,50,2)) +
       scale_y_continuous(breaks = seq(18,25,2)) +
-      theme_light()+
-      theme(legend.position = "none")+
+      theme_stata()+
+      tema_olimpiadas()+
       annotate("text", x=42, y=21.75, label = "Peso Normal")+
       annotate("text", x=42, y=18.25, label = "Abaixo do Peso")
   
@@ -884,12 +898,10 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
   labs(title = "Quantidade de Medalhas por Edição dos Jogos", subtitle = "Total de Medalhas") +
   xlab("Ano") +
   ylab("Quantidade")+
-  theme_bw()+
-  theme(legend.position = "none",
-            axis.text.x=element_text(size=10),
-            axis.text.y=element_text(size=10))
+  theme_economist()+
+  tema_olimpiadas()
 
-grafico_medalhas_modalidade
+
 ```
 
 ```{r texto_desempenho}
@@ -929,18 +941,21 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   ) +
   coord_cartesian(xlim = c(),ylim = c(0, 16))+
   labs(
-    title = "Quantidade de Medalhas por Edição dos Jogos ",
     subtitle = "Medalhas Separadas por Sexo", x = "Ano",
     y = "Quantidade"
   ) +
   scale_x_continuous(breaks = seq(1896, 2020, 4)) +
   scale_y_continuous(breaks = seq(0, 22, 1)) +
   scale_color_manual(values = c("#8AFFC1", "#554971")) +
-  theme_bw()+
-  theme(legend.position = "bottom",
-            axis.text.x=element_text(size=10),
-            axis.text.y=element_text(size=10))
+  theme_economist()+
+  tema_olimpiadas()+
+  theme(
+    legend.position = "bottom"
+  )
 
+
+
+grafico_medalhas_modalidade
 medalhas_masculino_feminino
 ```
 
