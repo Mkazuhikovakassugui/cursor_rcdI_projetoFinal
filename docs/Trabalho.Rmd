@@ -58,6 +58,7 @@ library(ggrepel)
 library(here)
 library(gridExtra)
 library(ggthemes)
+source("../R/tema_olimpiadas.R")
 
 ```
 
@@ -147,14 +148,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         na.rm = TRUE,
         alpha = 0.7
         ) +
-      scale_fill_manual(
-        values = c(
-          "#0085C8",
-          "#F3C200",
-          "#009E3C",
-          "#E00024",
-          "#000000"
-          )
+      cores_olimpiadas(
         ) +
       labs(
         title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades
@@ -172,106 +166,89 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       theme_economist(
         )+
-      theme(
-        text = element_text(
-          family = "Rio 2016"
-          ),                                               # define a fonte para todos os textos
-        title = element_text(
-          size = 15,
-          color = 
-          ),                                               # tamanho da fonte do título = 13
-        legend.position = "none",
-        axis.text.x=element_text(
-          size=11
-          ),
-        axis.text.y=element_text(
-          size=11
-          ),
-        plot.title = element_text(
-          hjust = 0.5
-          )
+      tema_olimpiadas(
         )
     
     grafico_medalha_x_idades                                   # gera o gráfico para ouro
     
   } else if (input$tipo_medalha == "Prata") {                  #  se selecionado prata
     grafico_medalha_x_idades <- total_prata_idade |>
-      ggplot(aes(x = x, 
-                 y = freq, 
-                 label = freq, 
-                 fill = x
-                 )
-             )+
-      geom_col(na.rm = TRUE, 
-               alpha = 0.7
-               ) +
-      geom_label(size = 4, 
-                 alpha = 0.5,
-                 nudge_y = 4, 
-                 show.legend = FALSE
-                 ) +
-      scale_fill_manual(values = c("#00A5DB",
-                                   "#1B70E3", 
-                                   "#2334CC", 
-                                   "#8567E6"
-                                   )
-                        ) +
-      labs(title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades",
-           subtitle = "Medalhas de Prata ",
-           fill = "idades"
-      ) +
-      xlab("Intervalos de Idade"
+      ggplot(
+        aes(
+          x = x, 
+          y = freq, 
+          label = freq, 
+          fill = x
+          )
+        )+
+      geom_col(
+        na.rm = TRUE, 
+        alpha = 0.7
+        ) +
+      geom_label(
+        size = 4, 
+        alpha = 0.5,
+        nudge_y = 4, 
+        show.legend = FALSE
+        ) +
+      cores_olimpiadas(
+        ) +
+      labs(
+        title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades
+        ",
+        subtitle = "Medalhas de Prata ",
+        fill = "idades"
+        ) +
+      xlab("
+           Intervalos de Idade"
            ) +
-      ylab("Quantidades de Medalhas"
+      ylab("Quantidades de Medalhas
+           "
            ) +
-      theme_classic() +
-      theme(legend.position = "none",
-            axis.text.x=element_text(size=11
-                                     ),
-            axis.text.y=element_text(size=11
-                                     )
-            )
+      theme_economist(
+        )+
+      tema_olimpiadas(
+        )
     
     grafico_medalha_x_idades                                   # gera o gráfico para prata
   } else {                                                     # se selecionado bronze
     grafico_medalha_x_idades <- total_bronze_idade |>
-      ggplot(aes(x = x, 
-                 y = freq, 
-                 label = freq,
-                 fill = x
-                 )
-             ) +
-      geom_col(na.rm = TRUE, 
-               alpha = 0.7
-               ) +
-      geom_label(size = 4, 
-                 alpha = 0.5,
-                 nudge_y = 4,
-                 show.legend = FALSE
-                 ) +
-      scale_fill_manual(values = c("#00A5DB", 
-                                   "#1B70E3",
-                                   "#2334CC",
-                                   "#8567E6", 
-                                   "#AA4586", 
-                                   "#59FFA0"
-                                   )
-                        ) +
-      labs(title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades", 
+      ggplot(
+        aes(
+          x = x,
+          y = freq,
+          label = freq,
+          fill = x
+          )
+        ) +
+      geom_col(
+        na.rm = TRUE,
+        alpha = 0.7
+        ) +
+      geom_label(
+        size = 4, 
+        alpha = 0.5,
+        nudge_y = 4,
+        show.legend = FALSE
+        ) +
+      cores_olimpiadas(
+        ) +
+      labs(title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades
+           ", 
            subtitle = "Medalhas de Bronze ",
            fill = "idades"
-      ) +
-      xlab("Intervalos de Idade"
            ) +
-      ylab("Quantidades de Medalhas"
-           ) +
-      theme_classic()+
-      theme(legend.position = "none",
-            axis.text.x=element_text(size=11
-                                     ),
-            axis.text.y=element_text(size=11
-                                     )
-            )
+      xlab(
+        "
+        Intervalos de Idade"
+        ) +
+      ylab(
+        "Quantidades de Medalhas
+        "
+        ) +
+      theme_economist(
+        )+
+      tema_olimpiadas()
     
     grafico_medalha_x_idades                                   # gera o gráfico para bronze
   }
