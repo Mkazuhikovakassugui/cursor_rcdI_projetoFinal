@@ -56,6 +56,9 @@ library(shiny)
 library(kableExtra)
 library(ggrepel)
 library(here)
+library(gridExtra)
+library(ggthemes)
+
 ```
 
 <br>
@@ -133,52 +136,112 @@ total_bronze_idade <- plyr::count(cut(medalhistas_bronze$idade,
 output$p1 <- renderPlot({                                      # uso do shiny para output dos resultados
   if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
     grafico_medalha_x_idades <- total_ouro_idade |>
-      ggplot(aes(x = x, y = freq, label = freq, fill = x)) +
-      geom_col(na.rm = TRUE, alpha = 0.7) +
-      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
-      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6")) +
-      labs(title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades", subtitle = "Medalhas de Ouro ",
-           fill = "idades") +
-      xlab("Intervalos de Idade") +
-      ylab("Quantidades de Medalhas") +
-      theme_classic()+
+      ggplot(aes(x = x,
+                 y = freq,
+                 label = freq,
+                 fill = x
+                 )
+             ) +
+      geom_col(na.rm = TRUE,
+               alpha = 0.7
+               ) +
+      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6"
+                                   )
+                        ) +
+      labs(title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades",
+           subtitle = "Medalhas de Ouro ",
+           fill = "idades"
+           ) +
+      xlab("Intervalos de Idade"
+           ) +
+      ylab("Quantidades de Medalhas"
+           ) +
+      theme_economist()+
       theme(legend.position = "none",
             axis.text.x=element_text(size=11),
-            axis.text.y=element_text(size=11))
+            axis.text.y=element_text(size=11)
+            )
+    
     grafico_medalha_x_idades                                   # gera o gráfico para ouro
   } else if (input$tipo_medalha == "Prata") {                  #  se selecionado prata
     grafico_medalha_x_idades <- total_prata_idade |>
-      ggplot(aes(x = x, y = freq, label = freq, fill = x))+
-      geom_col(na.rm = TRUE, alpha = 0.7) +
-      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
-      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6")) +
-      labs(
-        title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades", subtitle = "Medalhas de Prata ",
-        fill = "idades"
+      ggplot(aes(x = x, 
+                 y = freq, 
+                 label = freq, 
+                 fill = x
+                 )
+             )+
+      geom_col(na.rm = TRUE, 
+               alpha = 0.7
+               ) +
+      geom_label(size = 4, 
+                 alpha = 0.5,
+                 nudge_y = 4, 
+                 show.legend = FALSE
+                 ) +
+      scale_fill_manual(values = c("#00A5DB",
+                                   "#1B70E3", 
+                                   "#2334CC", 
+                                   "#8567E6"
+                                   )
+                        ) +
+      labs(title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades",
+           subtitle = "Medalhas de Prata ",
+           fill = "idades"
       ) +
-      xlab("Intervalos de Idade") +
-      ylab("Quantidades de Medalhas") +
+      xlab("Intervalos de Idade"
+           ) +
+      ylab("Quantidades de Medalhas"
+           ) +
       theme_classic() +
       theme(legend.position = "none",
-            axis.text.x=element_text(size=11),
-            axis.text.y=element_text(size=11))
+            axis.text.x=element_text(size=11
+                                     ),
+            axis.text.y=element_text(size=11
+                                     )
+            )
+    
     grafico_medalha_x_idades                                   # gera o gráfico para prata
   } else {                                                     # se selecionado bronze
     grafico_medalha_x_idades <- total_bronze_idade |>
-      ggplot(aes(x = x, y = freq, label = freq, fill = x)) +
-      geom_col(na.rm = TRUE, alpha = 0.7) +
-      geom_label(size = 4, alpha = 0.5, nudge_y = 4, show.legend = FALSE) +
-      scale_fill_manual(values = c("#00A5DB", "#1B70E3", "#2334CC", "#8567E6", "#AA4586", "#59FFA0")) +
-      labs(
-        title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades", subtitle = "Medalhas de Bronze ",
-        fill = "idades"
+      ggplot(aes(x = x, 
+                 y = freq, 
+                 label = freq,
+                 fill = x
+                 )
+             ) +
+      geom_col(na.rm = TRUE, 
+               alpha = 0.7
+               ) +
+      geom_label(size = 4, 
+                 alpha = 0.5,
+                 nudge_y = 4,
+                 show.legend = FALSE
+                 ) +
+      scale_fill_manual(values = c("#00A5DB", 
+                                   "#1B70E3",
+                                   "#2334CC",
+                                   "#8567E6", 
+                                   "#AA4586", 
+                                   "#59FFA0"
+                                   )
+                        ) +
+      labs(title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades", 
+           subtitle = "Medalhas de Bronze ",
+           fill = "idades"
       ) +
-      xlab("Intervalos de Idade") +
-      ylab("Quantidades de Medalhas") +
+      xlab("Intervalos de Idade"
+           ) +
+      ylab("Quantidades de Medalhas"
+           ) +
       theme_classic()+
       theme(legend.position = "none",
-            axis.text.x=element_text(size=11),
-            axis.text.y=element_text(size=11))
+            axis.text.x=element_text(size=11
+                                     ),
+            axis.text.y=element_text(size=11
+                                     )
+            )
+    
     grafico_medalha_x_idades                                   # gera o gráfico para bronze
   }
 })
@@ -190,7 +253,7 @@ output$t1 <- renderText({        # uso de renderText para inserir mensagen a ser
     trinta_quarenta <-32
     quarenta_cinquenta <- 2
     
-    glue::glue("Em 124 anos de história dos jogos olímpicos, {valor} atletas conquistaram a medalha de ouro. A maioria entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas também as ganharam com menos de vinte anos, {trinta_quarenta} atletas entre trinta e quarenta anos e {quarenta_cinquenta} atletas com mais de quarenta anos.")                                 # imprime esta mensagem
+    glue::glue("Em 124 anos de história dos jogos olímpicos, {valor} atletas conquistaram a medalha de ouro. A maioria entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas também as ganharam com menos de vinte anos, {trinta_quarenta} atletas entre trinta e quarenta anos e {quarenta_cinquenta} atletas com mais de quarenta anos.")                                  # imprime esta mensagem
 
   } else if (input$tipo_medalha == "Prata") {                 # se selecionado prata
     valor <- 192
@@ -198,7 +261,7 @@ output$t1 <- renderText({        # uso de renderText para inserir mensagen a ser
     vinte_trinta <- 133
     trinta_quarenta <-43
     
-    glue::glue("As medalhas de prata foram conquistadas por {valor} atletas, a maioria também entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas com menos de vinte anos e {trinta_quarenta} atletas entre trinta e quarenta anos.")     # imprime esta mensagem
+    glue::glue("As medalhas de prata foram conquistadas por {valor} atletas, a maioria também entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas com menos de vinte anos e {trinta_quarenta} atletas entre trinta e quarenta anos.")                       # imprime esta mensagem
   } else {                                                    # se selecionado bronze
     valor <- 200
     dez_vinte <- 8
@@ -211,8 +274,11 @@ output$t1 <- renderText({        # uso de renderText para inserir mensagen a ser
     glue::glue("Para as medalhas de bronze, a distribuição foi de {dez_vinte} para atletas de dez a vinte anos, {vinte_trinta} para os de vinte a trinta anos, {trinta_quarenta} para os de trinta a quarenta anos, {quarenta_cinquenta} para os atletas de quarenta a cinquenta anos, {cinquenta_sessenta} para um atleta de cinquenta a sessenta anos e {na_na} medalha para um valor NA (ausência de informação). Optei por não excluir este valor.")
   }                                                         # imprime esta mensagem
 })
-plotOutput("p1", height = "400px")                          # saída do respectivo gráfico p1
-textOutput("t1")                                            # saída do respectivo texto t1
+plotOutput("p1",
+           height = "400px"
+           )                                                # saída do respectivo gráfico p1
+textOutput("t1"
+           )                                                # saída do respectivo texto t1
 ```
 
 <br>
