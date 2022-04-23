@@ -67,7 +67,7 @@ library(here)
 ```{r carregamento_de_dados}
 #| echo=TRUE
 # Carregamento da base   - uso da função here() do pacote here visto no curso
-caminho_com_here <- here("dados","base_dados_definitiva", "olimpiadas_base_limpa.rds")
+caminho_com_here <- here("data", "olimpiadas_base_limpa.rds")
 dados_agrupados <- read_rds(caminho_com_here)
 dados_agrupados |> 
   head(3)
@@ -1048,3 +1048,4 @@ include_graphics("https://i0.wp.com/www.bookofthrees.com/wp-content/uploads/2016
 
 <p style="font-size:12px;">*Citius, altius, fortius*, traduzida para "mais rápido, *"mais alto e mais forte"* é o lema dos jogos Olímpicos, criada pelo **padre Henri Didon** e introduzida pelo **Barão de Coubertin**. </p>
 
+## e
