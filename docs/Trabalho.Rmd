@@ -26,6 +26,24 @@ knitr::opts_chunk$set(
 
 <br>
 
+```{r}
+#| echo=TRUE
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(knitr)
+library(shiny)
+library(kableExtra)
+library(ggrepel)
+library(here)
+library(gridExtra)
+library(ggthemes)
+library(cowplot)
+library(png)
+source("../R/tema_olimpiadas.R")
+
+```
+
 # Contextualização
 
 <div align=justify>O primeiro jogo olímpico da era moderna ocorreu entre 6 de Março e 5 de abril de 1896, em Atenas, e desde então se repetiram em diversas ocasiões premiando os melhores atletas em suas modalidades.
@@ -46,22 +64,6 @@ O resultado foi uma base de dados preparada com todos os jogos olímpicos de ver
 
 # Carregamento das Bibliotecas
 
-```{r bibliotecas usadas}
-#| echo=TRUE
-library(dplyr)
-library(readr)
-library(ggplot2)
-library(knitr)
-library(shiny)
-library(kableExtra)
-library(ggrepel)
-library(here)
-library(gridExtra)
-library(ggthemes)
-library(cowplot)
-source("../R/tema_olimpiadas.R")
-
-```
 
 <br>
 
@@ -891,13 +893,16 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
     colour="#508AA8",
     inherit.aes=FALSE, lwd=2)+
   coord_cartesian(xlim = c(),ylim = c(0, 24))+
-  annotate("text", x=1958, y=20, label = "Selecione acima a aba 'tabela de medalhas' para informação
+  annotate("text", x=1958, y=20, label = "*** Selecione acima a aba 'tabela de medalhas' para informação
            sobre este ponto")+
   scale_x_continuous(breaks = seq(1896, 2020,4)) +
   scale_y_continuous(breaks = seq(0,25,1)) +
-  labs(title = "Quantidade de Medalhas por Edição dos Jogos", subtitle = "Total de Medalhas") +
-  xlab("Ano") +
-  ylab("Quantidade")+
+  labs(title = "Quantidade de Medalhas por Edição dos Jogos
+       ", subtitle = "Total de Medalhas") +
+  xlab("
+       Ano") +
+  ylab("Quantidade
+       ")+
   theme_economist()+
   tema_olimpiadas()
 
@@ -941,8 +946,11 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   ) +
   coord_cartesian(xlim = c(),ylim = c(0, 16))+
   labs(
-    subtitle = "Medalhas Separadas por Sexo", x = "Ano",
-    y = "Quantidade"
+    subtitle = "Medalhas Separadas por Sexo",
+    x = "
+    Ano",
+    y = "Quantidade
+    "
   ) +
   scale_x_continuous(breaks = seq(1896, 2020, 4)) +
   scale_y_continuous(breaks = seq(0, 22, 1)) +
@@ -969,7 +977,7 @@ output$t3 <- renderText({
 textOutput("t3")
 ```
 
-##### Tabela de Medalhas
+##### *** Tabela de Medalhas
 
 ```{r texto_input_panel}
 inputPanel(
@@ -1114,8 +1122,8 @@ medalhas_atletas <- tibble(anos_vetor, qtde_atletas_vetor, qtde_medalhas_vetor) 
 
 ```{r medalha_quantidade_atletas_grafico}
 #| echo=TRUE,
-#| fig.height=5,
-#| fig.width = 10,
+#| fig.height=8,
+#| fig.width = 12,
 #| fig.align="center",
 #| echo=TRUE
 
@@ -1129,7 +1137,8 @@ medalhas_atletas <- medalhas_atletas |>
 medalhas_atletas |> 
   ggplot()+
   aes(x=TOTAL_ATLETAS, y = TOTAL_MEDALHAS)+
-  geom_smooth(method = "lm")+
+  geom_smooth(method = "lm",
+              fill = "#49606F")+
   geom_point(
     shape = "circle", size = 2.5, colour = "#508AA8"
   ) +
@@ -1138,14 +1147,27 @@ medalhas_atletas |>
   scale_x_continuous(breaks = seq(0,600,25)) +
   scale_y_continuous(breaks = seq(0,24,1)) +
   labs(title = "Quantidade de Medalha por Atletas",
-       subtitle = "A linha azul indica uma relação direta de proporcionalidade") +
-  xlab("Total de Atletas por Edição") +
-  ylab("Quantidade de Medalhas")+
-  theme_bw()+
-  theme(legend.position = "none",
-            axis.text.x=element_text(size=10),
-            axis.text.y=element_text(size=10))
+       subtitle = "A linha azul indica uma relação direta de proporcionalidade
+       ") +
+  xlab("
+       Total de Atletas por Edição") +
+  ylab("Quantidade de Medalhas
+       ")+
+  theme_tufte()+
+  theme(panel.background = element_rect(fill = "#C1CFD7"),
+        text = element_text(family = "Rio 2016"),
+        title = element_text(size = 15),
+        legend.position = "none",
+        axis.text.x=element_text(size=11),
+        axis.text.y=element_text(size=11),
+        axis.title.x = element_text(size = 17,color = "#000000"),
+        axis.title.y = element_text(size = 17,color = "#000000"),
+    plot.title = element_text(hjust = 0.5, face = "bold", color = "#000000", size = 22)
+  )
   
+
+
+ 
 ```
 
 ```{r correlacao_pearson}
@@ -1208,11 +1230,9 @@ Aguardemos, então, as Olimpíadas de Paris, 2024, com novos fatos, dados e conq
 <br> <br> <br>
 
 ```{r}
-#| fig,align = "right",
+#| fig.align = "left",
 #| out.width = "15%%"
 include_graphics("https://i0.wp.com/www.bookofthrees.com/wp-content/uploads/2016/12/citius.jpg?w=720&ssl=1")
 ```
 
 <p style="font-size:12px;">*Citius, altius, fortius*, traduzida para "mais rápido, *"mais alto e mais forte"* é o lema dos jogos Olímpicos, criada pelo **padre Henri Didon** e introduzida pelo **Barão de Coubertin**. </p>
-
-## e
