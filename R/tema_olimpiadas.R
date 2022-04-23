@@ -12,8 +12,7 @@ tema_olimpiadas <- function(){
       family = "Rio 2016"
     ),                                              
     title = element_text(
-      size = 15,
-      color = 
+      size = 15
     ),                                               
     legend.position = "none",
     axis.text.x=element_text(
@@ -22,6 +21,14 @@ tema_olimpiadas <- function(){
     axis.text.y=element_text(
       size=11
     ),
+    axis.title.x = element_text(
+      size = 17,
+      color = "#000000"
+    ),
+    axis.title.y = element_text(
+      size = 17,
+      color = "#000000"
+    ),
     plot.title = element_text(
       hjust = 0.5,
       face = "bold",
@@ -29,10 +36,10 @@ tema_olimpiadas <- function(){
       size = 22
     ),
     panel.background = element_rect(
-      fill = "#C8E5F9"
+      fill = "#F3F5F7"
     ),
     plot.background = element_rect(
-      fill = "#92A1B5"
+      fill = "#C1CFD7"
     )
   )
 }
