@@ -23,7 +23,16 @@ tema_olimpiadas <- function(){
       size=11
     ),
     plot.title = element_text(
-      hjust = 0.5
+      hjust = 0.5,
+      face = "bold",
+      color = "#000000",
+      size = 22
+    ),
+    panel.background = element_rect(
+      fill = "#C8E5F9"
+    ),
+    plot.background = element_rect(
+      fill = "#92A1B5"
     )
   )
 }
