@@ -146,7 +146,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       geom_col(
         na.rm = TRUE,
-        alpha = 0.7
+        alpha = 1
         ) +
       cores_olimpiadas(
         ) +
@@ -183,7 +183,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         )+
       geom_col(
         na.rm = TRUE, 
-        alpha = 0.7
+        alpha = 1
         ) +
       geom_label(
         size = 4, 
@@ -223,7 +223,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       geom_col(
         na.rm = TRUE,
-        alpha = 0.7
+        alpha = 1
         ) +
       geom_label(
         size = 4, 
@@ -441,7 +441,13 @@ Podemos verificar a relação altura, peso e modalidade por meio de gráficos de
 
 ```{r selectInput sexo_peso_altura_modalidade}
 inputPanel(                                                    # uso do shiny para input dos dados
-  shiny::selectInput(inputId ="sexoid", label = "Atleta Masculino ou Feminino", choices = c("Male", "Female"))
+  shiny::selectInput(
+    inputId ="sexoid",
+    label = "Atleta Masculino ou Feminino",
+    choices = c(
+      "Male",
+      "Female")
+    )
 )
 ```
 
@@ -450,49 +456,115 @@ options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso mé
 output$p2 <- renderPlot({
   if (input$sexoid == "Male") {                               # se selecionado a opção Male
     peso_altura_modalidade_homens <- dados_agrupados_brasil |> 
-      filter(ano == 2016, sexo == "Male") |> 
-      group_by(modalidade) |> 
-      mutate(media_altura = round(mean(altura, na.rm = TRUE),2),
-             media_peso = round(mean(peso, na.rm = TRUE),2)) |> 
-      distinct(modalidade, media_altura, media_peso) |> 
-      na.exclude() |> 
-      ggplot()+
-      geom_point()+
-      aes(x=media_peso, y = media_altura)+
-      geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "Peso Médio (Kg)", y = "Altura Média (m)",
-           title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
-           subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
+      filter(
+        ano == 2016,
+        sexo == "Male"
+        ) |> 
+      group_by(
+        modalidade
+        ) |> 
+      mutate(
+        media_altura = round(
+          mean(
+            altura, na.rm = TRUE
+            ),2
+          ),
+        media_peso = round(
+          mean(
+            peso,
+            na.rm = TRUE
+            ),2
+          )
+        ) |> 
+      distinct(
+        modalidade,
+        media_altura,
+        media_peso
+        ) |> 
+      na.exclude(
+        ) |> 
+      ggplot(
+        )+
+      geom_point(
+        )+
+      aes(
+        x=media_peso,
+        y = media_altura
+        )+
+      geom_text_repel(
+        aes(
+          label = modalidade,
+          color = modalidade
+          )
+        )+
+      labs(
+      x= "
+           Peso Médio (Kg)",
+           y = "Altura Média (m)
+           ",
+      title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
+      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
       scale_x_continuous(breaks = seq(40,130,5)) +
       scale_y_continuous(breaks = seq(130,240,5)) +
-      theme_light()+
-      theme(legend.position = "none",
-            axis.text.x=element_text(size=12),
-            axis.text.y=element_text(size=12))
+      theme_stata(
+        )+
+      tema_olimpiadas(
+        )
+    
   peso_altura_modalidade_homens                             # gera o gráfico para o masculino
     
   } 
   else if (input$sexoid == "Female") {                     # se selecionado Female
     peso_altura_modalidade_mulheres <- dados_agrupados_brasil |> 
-      filter(ano == 2016, sexo == "Female") |> 
-      group_by(modalidade) |> 
-      mutate(media_altura = round(mean(altura, na.rm = TRUE),2),
-             media_peso = round(mean(peso, na.rm = TRUE),2)) |> 
-      distinct(modalidade, media_altura, media_peso) |> 
+      filter(
+        ano == 2016,
+        sexo == "Female"
+        ) |> 
+      group_by(modalidade
+        ) |> 
+      mutate(
+        media_altura = round(mean(altura, na.rm = TRUE),2
+                             ),
+        media_peso = round(mean(peso, na.rm = TRUE),2
+                           )
+        ) |> 
+      distinct(
+        modalidade,
+        media_altura,
+        media_peso
+        ) |> 
       na.exclude() |> 
       ggplot()+
       geom_point()+
-      aes(x=media_peso, y = media_altura)+
-      geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "Peso Médio (Kg)", y = "Altura Média (m)",
-             title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
-             subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016") +
-      scale_x_continuous(breaks = seq(40,130,5)) +
-      scale_y_continuous(breaks = seq(130,220,5)) +
-      theme_light()+
-      theme(legend.position = "none",
-            axis.text.x=element_text(size=12),
-            axis.text.y=element_text(size=12))
+      aes(
+        x=media_peso,
+        y = media_altura
+        )+
+      geom_text_repel(
+        aes(
+          label = modalidade,
+          color = modalidade
+          )
+        )+
+      labs(
+        x= "Peso Médio (Kg)",
+        y = "Altura Média (m)",
+        title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
+        subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016
+           ") +
+      scale_x_continuous(
+        breaks = seq(40,130,5
+                     )
+        ) +
+      scale_y_continuous(
+        breaks = seq(130,220,5
+                     )
+        ) +
+      theme_stata(
+        )+
+      tema_olimpiadas(
+        )
+    
   peso_altura_modalidade_mulheres                           # gera o gráfico para o feminino
     
   }
@@ -533,11 +605,17 @@ options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso mé
 output$p3 <- renderPlot({
   if (input$sexoidimc == "Male") {                               # se selecionado a opção Male
     imc_idade_modalidade_homens <- dados_agrupados_brasil |> 
-      filter(ano == 2016, sexo == "Male" ) |> 
-      group_by(modalidade) |> 
+      filter(
+        ano == 2016,
+        sexo == "Male"
+        ) |> 
+      group_by(
+        modalidade
+        ) |> 
       mutate(imc = round((peso/(altura/100 * altura/100)),3),
              media_idade = round(mean(idade, na.rm = TRUE),2),
-             media_imc = round(mean(imc, na.rm = TRUE),2)) |>
+             media_imc = round(mean(imc, na.rm = TRUE),2)
+             ) |>
       distinct(modalidade,media_idade, media_imc) |> 
       na.exclude() |> 
       ggplot()+
