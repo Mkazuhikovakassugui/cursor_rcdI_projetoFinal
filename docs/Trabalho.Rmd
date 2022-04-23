@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 
 <br>
 
-```{r}
+```{r pacotes}
 #| echo=TRUE
 library(dplyr)
 library(readr)
@@ -45,6 +45,14 @@ source("../R/tema_olimpiadas.R")
 ```
 
 # Contextualização
+
+```{r knitr, message=FALSE, warning=FALSE}
+#| fig.align = "right",
+#| out.width = "15%",
+
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/pt/4/4f/Olympia_2016_-_Rio_%282%29.svg")
+```
+
 
 <div align=justify>O primeiro jogo olímpico da era moderna ocorreu entre 6 de Março e 5 de abril de 1896, em Atenas, e desde então se repetiram em diversas ocasiões premiando os melhores atletas em suas modalidades.
 
