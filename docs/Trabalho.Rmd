@@ -1191,8 +1191,8 @@ medalhas_atletas |>
         text = element_text(family = "Rio 2016"),
         title = element_text(size = 15),
         legend.position = "none",
-        axis.text.x=element_text(size=11),
-        axis.text.y=element_text(size=11),
+        axis.text.x=element_text(size=11, color = "#000000"),
+        axis.text.y=element_text(size=11, color = "#000000"),
         axis.title.x = element_text(size = 17,color = "#000000"),
         axis.title.y = element_text(size = 17,color = "#000000"),
     plot.title = element_text(hjust = 0.5, face = "bold", color = "#000000", size = 22)
@@ -1248,6 +1248,8 @@ DT::renderDataTable(dados_agrupados_brasil,
 - Temas para RMarkdown por [Andrew Ziefler](https://www.datadreaming.org/post/r-markdown-theme-gallery/)
 - Personalização de tabelas com kableExtra por [Hao Zhu](https://haozhu233.github.io/kableExtra/awesome_table_in_html.html)
 - Livro sobre R - [Ciência de dados em R - Curso R](https://livro.curso-r.com/)
+- Zen do R - Formas simples de melhorar a organização de projetos - [Caio Lente + Curso-R](https://curso-r.github.io/zen-do-r/)
+- Paletas para seleção de cores - [coolors](https://coolors.co/fcfafa-c8d3d5-a4b8c4-6e8387-0cca4a)
 
 <br>
 
