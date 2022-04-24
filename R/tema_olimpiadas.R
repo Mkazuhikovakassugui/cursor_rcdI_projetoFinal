@@ -6,7 +6,7 @@
 # 1) Função para o tema dos gráficos ----------------------------------------------------------
 
 
-tema_olimpiadas <- function(){
+tema_olimpiadas <- function() {
   theme(
     text = element_text(
       family = "Rio 2016"

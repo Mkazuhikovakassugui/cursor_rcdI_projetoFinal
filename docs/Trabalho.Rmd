@@ -17,10 +17,11 @@ runtime: shiny
 
 ```{r setup}
 #| include=FALSE
+
 knitr::opts_chunk$set(
   echo = FALSE,
   message = FALSE,
-  warning = FALSE 
+  warning = FALSE
 )
 ```
 
@@ -58,6 +59,7 @@ O resultado foi uma base de dados preparada com todos os jogos olímpicos de ver
 
 ```{r pacotes}
 #| echo = TRUE
+
 library(dplyr)
 library(readr)
 library(ggplot2)
@@ -67,9 +69,7 @@ library(kableExtra)
 library(ggrepel)
 library(here)
 library(ggthemes)
-
 source("../R/tema_olimpiadas.R")
-
 ```
 
 # Leitura da Base de Dados Preparada
@@ -79,9 +79,10 @@ source("../R/tema_olimpiadas.R")
 ```{r carregamento_de_dados}
 #| echo=TRUE
 # Carregamento da base   - uso da função here() do pacote here visto no curso
+
 caminho_com_here <- here("data", "olimpiadas_base_limpa.rds")
 dados_agrupados <- read_rds(caminho_com_here)
-dados_agrupados |> 
+dados_agrupados |>
   head(3)
 ```
 
@@ -90,16 +91,19 @@ dados_agrupados |>
 <br>
 
 ```{r medalhistas_por_tipo_de_medalhas}
+
 # Seleção dos dados para o Brasil
-dados_agrupados_brasil <- dados_agrupados |>                  # seleciona apenas os atletas brasileiros
+dados_agrupados_brasil <- dados_agrupados |> # seleciona apenas os atletas brasileiros
   filter(noc == "BRA")
+
 # Seleção dos dados dos atletas medalhistas
-medalhistas_brasil <- dados_agrupados_brasil |>               # filtra os campos preenchidos
+medalhistas_brasil <- dados_agrupados_brasil |> # filtra os campos preenchidos
   filter((!is.null(medalha)) & (!is.na(medalha)))
+
 # Sumarização das quantidades de medalhas consquistadas por todos os atletas agrupadas por tipo de medalha
 medalhistas_por_tipo <- medalhistas_brasil |>
   group_by(medalha) |>
-  summarise(quantidade = n())                                 # sumariza o resultado pelo número de medalhas
+  summarise(quantidade = n()) # sumariza o resultado pelo número de medalhas
 ```
 
 # Análise
@@ -110,31 +114,36 @@ No gráfico abaixo, ao selecionar o tipo de medalha na lista de seleção, terem
 </div>
 
 ```{r select_input tipo_de_medalha}
-inputPanel(                     # uso da biblioteca shiny para o input de dados visto no curso de dashboards
-  shiny::selectInput(inputId = "tipo_medalha", label = "Tipo de Medalha", choices = c("Ouro", "Prata", "Bronze")),
+
+inputPanel( # uso da biblioteca shiny para o input de dados visto no curso de dashboards
+  selectInput(
+    inputId = "tipo_medalha",
+    label = "Tipo de Medalha",
+    choices = c("Ouro", "Prata", "Bronze")
+  )
 )
 ```
 
 ```{r quantidade_medalhas_por_tipo}
 
-intervalo_classes_idade <- round(seq(0, 70, 10), 1)            # vetor para o intervalo de classes de idade
+intervalo_classes_idade <- round(seq(0, 70, 10), 1) # vetor para o intervalo de classes de idade
 medalhistas_ouro <- medalhistas_brasil |>
-  filter(medalha == "Gold")                                    # apenas atletas brasileiros com ouro
+  filter(medalha == "Gold") # apenas atletas brasileiros com ouro
 
-total_ouro_idade <- plyr::count(cut(medalhistas_ouro$idade,    # intervalos de classes de 0 a 70 anos p/ ouro
-  breaks = intervalo_classes_idade,
-  right = FALSE                                                # inclui o limite inferior e exclui o superior
-))
-
-medalhistas_prata <- medalhistas_brasil |>                     # para os medalhistas de prata
-  filter(medalha == "Silver")
-
-total_prata_idade <- plyr::count(cut(medalhistas_prata$idade,  
+total_ouro_idade <- plyr::count(cut(medalhistas_ouro$idade,
   breaks = intervalo_classes_idade,
   right = FALSE
 ))
 
-medalhistas_bronze <- medalhistas_brasil |>                    # para os medalhistas de bronze
+medalhistas_prata <- medalhistas_brasil |> # para os medalhistas de prata
+  filter(medalha == "Silver")
+
+total_prata_idade <- plyr::count(cut(medalhistas_prata$idade,
+  breaks = intervalo_classes_idade,
+  right = FALSE
+))
+
+medalhistas_bronze <- medalhistas_brasil |> # para os medalhistas de bronze
   filter(medalha == "Bronze" & !is.na(medalha))
 
 total_bronze_idade <- plyr::count(cut(medalhistas_bronze$idade,
@@ -144,165 +153,137 @@ total_bronze_idade <- plyr::count(cut(medalhistas_bronze$idade,
 ```
 
 ```{r output gráficos_quantidades_medalhas_por_tipo}
-output$p1 <- renderPlot({                                      # uso do shiny para output dos resultados
-  if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
+output$p1 <- renderPlot({ # uso do shiny para output dos resultados
+  if (input$tipo_medalha == "Ouro") { # se selecionado ouro
     grafico_medalha_x_idades <- total_ouro_idade |>
-      ggplot(
-        aes(x = x,
-            y = freq,
-            label = freq,
-            fill = x
-            )
-        ) +
-      geom_col(
-        na.rm = TRUE,
-        alpha = 1
-        ) +
-      geom_label(
-        size = 4, 
-        alpha = 0,
-        nudge_y = 7, 
-        show.legend = FALSE,
-        ) +
-      cores_olimpiadas(
-        ) +
-      labs(
-        title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades
+      ggplot(aes(x = x,
+                 y = freq,
+                 label = freq,
+                 fill = x)
+             ) +
+      geom_col(na.rm = TRUE,
+               alpha = 1
+               ) +
+      geom_label(size = 4,
+                 alpha = 0,
+                 nudge_y = 7,
+                 show.legend = FALSE
+                 ) +
+      cores_olimpiadas() +
+      labs(title = "Atletas com Medalhas de Ouro do Brasil por Intervalo de Idades
         ",
         subtitle = "Medalhas de Ouro ",
         fill = "idades"
         ) +
-      xlab(
-        "
-        Intervalos de Idade"
-         ) +
-      ylab(
-        "Quantidades de Medalhas
-        "
-        ) +
-      theme_economist(
-        )+
-      tema_olimpiadas(
-        )
-    
-    grafico_medalha_x_idades                                   # gera o gráfico para ouro
-    
-  } else if (input$tipo_medalha == "Prata") {                  #  se selecionado prata
-    grafico_medalha_x_idades <- total_prata_idade |>
-      ggplot(
-        aes(
-          x = x, 
-          y = freq, 
-          label = freq, 
-          fill = x
-          )
-        )+
-      geom_col(
-        na.rm = TRUE, 
-        alpha = 1
-        ) +
-      geom_label(
-        size = 4, 
-        alpha = 0.0,
-        nudge_y = 7, 
-        show.legend = FALSE
-        ) +
-      cores_olimpiadas(
-        ) +
-      labs(
-        title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades
-        ",
-        subtitle = "Medalhas de Prata ",
-        fill = "idades"
-        ) +
       xlab("
-           Intervalos de Idade"
-           ) +
-      ylab("Quantidades de Medalhas
-           "
-           ) +
-      theme_economist(
-        )+
-      tema_olimpiadas(
-        )
-    
-    grafico_medalha_x_idades                                   # gera o gráfico para prata
-  } else {                                                     # se selecionado bronze
-    grafico_medalha_x_idades <- total_bronze_idade |>
-      ggplot(
-        aes(
-          x = x,
-          y = freq,
-          label = freq,
-          fill = x
-          )
+        Intervalos de Idade"
         ) +
+        ylab("Quantidades de Medalhas
+        ") +
+      theme_economist() +
+      tema_olimpiadas()
+
+    grafico_medalha_x_idades # gera o gráfico para ouro
+    
+  } else if (input$tipo_medalha == "Prata") { #  se selecionado prata
+    grafico_medalha_x_idades <- total_prata_idade |>
+      ggplot(aes(x = x,
+                 y = freq,
+                 label = freq,
+                 fill = x
+                 )
+             ) +
       geom_col(
         na.rm = TRUE,
         alpha = 1
         ) +
-      geom_label(
-        size = 4, 
-        alpha = 0.0,
-        nudge_y = 7,
-        show.legend = FALSE,
+      geom_label(size = 4,
+                 alpha = 0.0,
+                 nudge_y = 7,
+                 show.legend = FALSE
+                 ) +
+      cores_olimpiadas() +
+      labs(title = "Atletas com Medalhas de Prata do Brasil por Intervalo de Idades
+        ",
+        subtitle = "Medalhas de Prata ",
+        fill = "idades"
         ) +
-      cores_olimpiadas(
-        ) +
+        xlab("
+           Intervalos de Idade") +
+           ylab("Quantidades de Medalhas
+                ") +
+      theme_economist() +
+      tema_olimpiadas()
+
+    grafico_medalha_x_idades # gera o gráfico para prata
+    
+  } else { # se selecionado bronze
+    grafico_medalha_x_idades <- total_bronze_idade |>
+      ggplot(aes(x = x,
+                 y = freq,
+                 label = freq,
+                 fill = x
+                 )
+             ) +
+      geom_col(na.rm = TRUE,
+               alpha = 1
+               ) +
+      geom_label(size = 4,
+                 alpha = 0.0,
+                 nudge_y = 7,
+                 show.legend = FALSE,
+                 ) +
+      cores_olimpiadas() +
       labs(title = "Atletas com Medalhas de Bronze do Brasil por Intervalo de Idades
-           ", 
+           ",
            subtitle = "Medalhas de Bronze ",
            fill = "idades"
            ) +
-      xlab(
-        "
+      xlab("
         Intervalos de Idade"
-        ) +
+      ) +
       ylab(
         "Quantidades de Medalhas
         "
-        ) +
-      theme_economist(
-        )+
+      ) +
+      theme_economist() +
       tema_olimpiadas()
+
+    grafico_medalha_x_idades # gera o gráfico para bronze
     
-    grafico_medalha_x_idades                                   # gera o gráfico para bronze
   }
 })
-output$t1 <- renderText({        # uso de renderText para inserir mensagen a ser apresentada para cada gráfico
-  if (input$tipo_medalha == "Ouro") {                          # se selecionado ouro
+
+output$t1 <- renderText({ # uso de renderText para inserir mensagen a ser apresentada para cada gráfico
+  if (input$tipo_medalha == "Ouro") { # se selecionado ouro
     valor <- 138
     dez_vinte <- 6
     vinte_trinta <- 98
-    trinta_quarenta <-32
+    trinta_quarenta <- 32
     quarenta_cinquenta <- 2
-    
-    glue::glue("Em 124 anos de história dos jogos olímpicos, {valor} atletas conquistaram a medalha de ouro. A maioria entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas também as ganharam com menos de vinte anos, {trinta_quarenta} atletas entre trinta e quarenta anos e {quarenta_cinquenta} atletas com mais de quarenta anos.")                                  # imprime esta mensagem
 
-  } else if (input$tipo_medalha == "Prata") {                 # se selecionado prata
+    glue::glue("Em 124 anos de história dos jogos olímpicos, {valor} atletas conquistaram a medalha de ouro. A maioria entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas também as ganharam com menos de vinte anos, {trinta_quarenta} atletas entre trinta e quarenta anos e {quarenta_cinquenta} atletas com mais de quarenta anos.") # imprime esta mensagem
+  } else if (input$tipo_medalha == "Prata") { # se selecionado prata
     valor <- 192
     dez_vinte <- 16
     vinte_trinta <- 133
-    trinta_quarenta <-43
-    
-    glue::glue("As medalhas de prata foram conquistadas por {valor} atletas, a maioria também entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas com menos de vinte anos e {trinta_quarenta} atletas entre trinta e quarenta anos.")                       # imprime esta mensagem
-  } else {                                                    # se selecionado bronze
+    trinta_quarenta <- 43
+
+    glue::glue("As medalhas de prata foram conquistadas por {valor} atletas, a maioria também entre vinte e trinta anos totalizando {vinte_trinta} medalhas, {dez_vinte} atletas com menos de vinte anos e {trinta_quarenta} atletas entre trinta e quarenta anos.") # imprime esta mensagem
+  } else { # se selecionado bronze
     valor <- 200
     dez_vinte <- 8
     vinte_trinta <- 153
-    trinta_quarenta <-32
+    trinta_quarenta <- 32
     quarenta_cinquenta <- 5
     cinquenta_sessenta <- 1
     na_na <- 1
-    
+
     glue::glue("Para as medalhas de bronze, a distribuição foi de {dez_vinte} para atletas de dez a vinte anos, {vinte_trinta} para os de vinte a trinta anos, {trinta_quarenta} para os de trinta a quarenta anos, {quarenta_cinquenta} para os atletas de quarenta a cinquenta anos, {cinquenta_sessenta} para um atleta de cinquenta a sessenta anos e {na_na} medalha para um valor NA (ausência de informação). Optei por não excluir este valor.")
-  }                                                         # imprime esta mensagem
+  } # imprime esta mensagem
 })
-plotOutput("p1",
-           height = "400px"
-           )                                                # saída do respectivo gráfico p1
-textOutput("t1"
-           )                                                # saída do respectivo texto t1
+plotOutput("p1", height = "400px") # saída do respectivo gráfico p1
+textOutput("t1") # saída do respectivo texto t1
 ```
 
 <br>
@@ -360,8 +341,8 @@ summary(dados_agrupados_brasil) |>
 ```{r atleta_mais_baixo}
 #| echo=TRUE
 mais_jovem <- dados_agrupados_brasil |>
-  slice_min(order_by = idade) |> 
-  select(nome, idade, modalidade, ano, cidade) |> 
+  slice_min(order_by = idade) |>
+  select(nome, idade, modalidade, ano, cidade) |>
   arrange(idade)
 
 mais_jovem
@@ -392,11 +373,11 @@ fonte: <https://pt.wikipedia.org/wiki/Talita_Rodrigues#:~:text=Com%2013%20anos%2
 
 ```{r os_menores}
 #| echo=TRUE
-mais_baixos <- dados_agrupados_brasil |>                
+mais_baixos <- dados_agrupados_brasil |>
   group_by(altura) |>
   filter(altura <= 145) |>
-  arrange(altura) |> 
-  summarise(nome, idade, altura, ano, cidade, modalidade) |> 
+  arrange(altura) |>
+  summarise(nome, idade, altura, ano, cidade, modalidade) |>
   head(6)
 mais_baixos
 ```
@@ -406,10 +387,9 @@ mais_baixos
 mais_altoS <- dados_agrupados_brasil |>
   group_by(altura) |>
   filter(altura >= 214) |>
-  summarise(nome, idade, altura, ano, cidade, modalidade) |> 
-  arrange(desc(altura) )
+  summarise(nome, idade, altura, ano, cidade, modalidade) |>
+  arrange(desc(altura))
 mais_altoS
-
 ```
 
 <div align = justify  style="text-indent: 3em;">Os jogadores **Paulo Cesar da Silva** (Paulão) e **Paulo Villas Boas de Almeida** (Paulinho Villas Boas), da seleção de basquete, foram os mais altos. As ginastas  **Flávia Lopes Saraiva** e **Daiane Garcia dos Santos**, da seleção olímpica de ginástica artística, as com menor estatura.
@@ -459,142 +439,112 @@ Abaixo, temo-la por sexo para os atletas que participaram dos jogos de 2016. Nã
 <br>
 
 ```{r selectInput sexo_peso_altura_modalidade}
-inputPanel(                                                    # uso do shiny para input dos dados
+inputPanel( # uso do shiny para input dos dados
   shiny::selectInput(
-    inputId ="sexoid",
+    inputId = "sexoid",
     label = "Atleta Masculino ou Feminino",
     choices = c(
       "Male",
-      "Female")
+      "Female"
     )
+  )
 )
 ```
 
 ```{r graficos_sexo_peso_altura_modalidade}
 options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso médio x altura média x modalidade
 output$p2 <- renderPlot({
-  if (input$sexoid == "Male") {                               # se selecionado a opção Male
-    peso_altura_modalidade_homens <- dados_agrupados_brasil |> 
+  if (input$sexoid == "Male") { # se selecionado a opção Male
+    peso_altura_modalidade_homens <- dados_agrupados_brasil |>
       filter(
         ano == 2016,
         sexo == "Male"
-        ) |> 
-      group_by(
-        modalidade
-        ) |> 
+      ) |>
+      group_by(modalidade) |>
       mutate(
-        media_altura = round(
-          mean(
-            altura, na.rm = TRUE
-            ),2
-          ),
-        media_peso = round(
-          mean(
-            peso,
-            na.rm = TRUE
-            ),2
-          )
-        ) |> 
+        media_altura = round(mean(altura, na.rm = TRUE), 2),
+        media_peso = round(mean(peso, na.rm = TRUE), 2)
+      ) |>
       distinct(
         modalidade,
         media_altura,
         media_peso
-        ) |> 
-      na.exclude(
-        ) |> 
-      ggplot(
-        )+
-      geom_point(
-        )+
+      ) |>
+      na.exclude() |>
+      ggplot() +
+      geom_point() +
       aes(
-        x=media_peso,
+        x = media_peso,
         y = media_altura
-        )+
-      geom_text_repel(
-        aes(
-          label = modalidade,
-          color = modalidade
-          )
-        )+
+      ) +
+      geom_text_repel(aes(
+        label = modalidade,
+        color = modalidade
+      )) +
       labs(
-      x= "
+        x = "
       Peso Médio (Kg)",
-           y = "Altura Média (m)
+        y = "Altura Média (m)
       ",
-      title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva
+        title = "Relação de Peso Médio e Altura Média por Modalidade Esportiva
       ",
-      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
-      scale_x_continuous(breaks = seq(40,130,5)) +
-      scale_y_continuous(breaks = seq(130,240,5)) +
-      theme_stata(
-        )+
-      tema_olimpiadas(
-        )+
-      theme(
-        
-      )
-    
-  peso_altura_modalidade_homens                             # gera o gráfico para o masculino
-    
-  } 
-  else if (input$sexoid == "Female") {                     # se selecionado Female
-    peso_altura_modalidade_mulheres <- dados_agrupados_brasil |> 
+        subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016"
+      ) +
+      scale_x_continuous(breaks = seq(40, 130, 5)) +
+      scale_y_continuous(breaks = seq(130, 240, 5)) +
+      theme_stata() +
+      tema_olimpiadas() +
+      theme()
+
+    peso_altura_modalidade_homens # gera o gráfico para o masculino
+  } else if (input$sexoid == "Female") { # se selecionado Female
+    peso_altura_modalidade_mulheres <- dados_agrupados_brasil |>
       filter(
         ano == 2016,
         sexo == "Female"
-        ) |> 
-      group_by(modalidade
-        ) |> 
+      ) |>
+      group_by(modalidade) |>
       mutate(
-        media_altura = round(mean(altura, na.rm = TRUE),2
-                             ),
-        media_peso = round(mean(peso, na.rm = TRUE),2
-                           )
-        ) |> 
+        media_altura = round(mean(altura, na.rm = TRUE), 2),
+        media_peso = round(mean(peso, na.rm = TRUE), 2)
+      ) |>
       distinct(
         modalidade,
         media_altura,
         media_peso
-        ) |> 
-      na.exclude() |> 
-      ggplot()+
-      geom_point()+
+      ) |>
+      na.exclude() |>
+      ggplot() +
+      geom_point() +
       aes(
-        x=media_peso,
+        x = media_peso,
         y = media_altura
-        )+
+      ) +
       geom_text_repel(
         aes(
           label = modalidade,
           color = modalidade
-          )
-        )+
+        )
+      ) +
       labs(
-        x= "
+        x = "
         Peso Médio (Kg)",
         y = "Altura Média (m)
         ",
-        title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva
+        title = "Relação de Peso Médio e Altura Média por Modalidade Esportiva
         ",
-        subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016") +
-      scale_x_continuous(
-        breaks = seq(40,130,5
-                     )
-        ) +
-      scale_y_continuous(
-        breaks = seq(130,220,5
-                     )
-        ) +
-      theme_stata(
-        )+
-      tema_olimpiadas(
-        )
-    
-  peso_altura_modalidade_mulheres                           # gera o gráfico para o feminino
-    
+        subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016"
+      ) +
+      scale_x_continuous(breaks = seq(40, 130, 5)) +
+      scale_y_continuous(breaks = seq(130, 220, 5)) +
+      theme_stata() +
+      tema_olimpiadas()
+
+    peso_altura_modalidade_mulheres # gera o gráfico para o feminino
   }
 })
-plotOutput("p2")                                            # saída do gráfico p2
+
+plotOutput("p2") # saída do gráfico p2
 ```
 
 <div align = justify  style="text-indent: 3em;">Qual a importância da anatomia para o desempenho dos atletas?
@@ -624,101 +574,118 @@ Com **distorções**. Observe-as nos gráficos.
 <br>
 
 ```{r selectInput mediaimc_mediaidade_modalidade}
-inputPanel(                                                    # uso do shiny para input dos dados
-  shiny::selectInput(inputId ="sexoidimc", label = "Atleta Masculino ou Feminino", choices = c("Male", "Female"))
+inputPanel( # uso do shiny para input dos dados
+  shiny::selectInput(inputId = "sexoidimc", label = "Atleta Masculino ou Feminino", choices = c("Male", "Female"))
 )
 ```
 
 ```{r graficos_sexo_imc_idade_modalidade}
 options(ggrepel.max.overlaps = Inf) # neste chunck criaremos o gráfico peso médio x altura média x modalidade
 output$p3 <- renderPlot({
-  if (input$sexoidimc == "Male") {                               # se selecionado a opção Male
-    imc_idade_modalidade_homens <- dados_agrupados_brasil |> 
+  if (input$sexoidimc == "Male") { # se selecionado a opção Male
+    imc_idade_modalidade_homens <- dados_agrupados_brasil |>
       filter(
         ano == 2016,
         sexo == "Male"
-        ) |> 
-      group_by(
-        modalidade
-        ) |> 
-      mutate(imc = round((peso/(altura/100 * altura/100)),3),
-             media_idade = round(mean(idade, na.rm = TRUE),2),
-             media_imc = round(mean(imc, na.rm = TRUE),2)
-             ) |>
-      distinct(modalidade,media_idade, media_imc) |> 
-      na.exclude() |> 
-      ggplot()+
-      geom_point()+
-      aes(x=media_idade, y = media_imc)+
-      geom_hline(yintercept = 18.6, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#6BA368")+
-      geom_hline(yintercept = 24.9, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#6BA368")+
-      geom_hline(yintercept = 29.9, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#BA1200")+
-      geom_hline(yintercept = 39.9, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#470063")+
-      geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "
-           Idade (anos)", y = expression(IMC~(kg/m^2)),
-           title ="Relação de IMC e Idade por Modalidade Esportiva
+      ) |>
+      group_by(modalidade) |>
+      mutate(
+        imc = round((peso / (altura / 100 * altura / 100)), 3),
+        media_idade = round(mean(idade, na.rm = TRUE), 2),
+        media_imc = round(mean(imc, na.rm = TRUE), 2)
+      ) |>
+      distinct(modalidade, media_idade, media_imc) |>
+      na.exclude() |>
+      ggplot() +
+      geom_point() +
+      aes(x = media_idade, y = media_imc) +
+      geom_hline(
+        yintercept = 18.6,
+        size = 0.5,
+        linetype = 2,
+        colour = "#6BA368"
+      ) +
+      geom_hline(
+        yintercept = 24.9,
+        size = 0.5,
+        linetype = 2,
+        colour = "#6BA368"
+      ) +
+      geom_hline(
+        yintercept = 29.9,
+        size = 0.5,
+        linetype = 2,
+        colour = "#BA1200"
+      ) +
+      geom_hline(
+        yintercept = 39.9,
+        size = 0.5,
+        linetype = 2,
+        colour = "#470063"
+      ) +
+      geom_text_repel(aes(label = modalidade, color = modalidade)) +
+      labs(
+        x = "
+           Idade (anos)", y = expression(IMC ~ (kg / m^2)),
+        title = "Relação de IMC e Idade por Modalidade Esportiva
            ",
-           subtitle = "Dados para Atletas Masculinos") +
-      scale_x_continuous(breaks = seq(10,50,2)) +
-      scale_y_continuous(breaks = seq(10,45,2)) +
-      theme_stata()+
-      tema_olimpiadas()+
-      annotate("text", x=44, y=21.5, label = "Peso Normal" )+
-      annotate("text", x=44, y=27, label = "Sobrepeso", color = "#6E0D27")+
-      annotate("text", x=43.5, y=35.5, label = "Obesidade Grau 1", color = "#6E0D27", face = "bold")
-  
-imc_idade_modalidade_homens
-}
-  else if (input$sexoidimc == "Female") {                     # se selecionado Female
-    imc_idade_modalidade_mulheres <- dados_agrupados_brasil |> 
-      filter(ano == 2016, sexo == "Female" ) |> 
-      group_by(modalidade) |> 
-      mutate(imc = round((peso/(altura/100 * altura/100)),3),
-             media_idade = round(mean(idade, na.rm = TRUE),2),
-             media_imc = round(mean(imc, na.rm = TRUE),2)) |>
-      distinct(modalidade,media_idade, media_imc) |> 
-      na.exclude() |> 
-      ggplot()+
-      geom_point()+
-      aes(x=media_idade, y = media_imc)+
-      geom_hline(yintercept = 18.6, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#6BA368")+
-      geom_hline(yintercept = 24.9, 
-                 size = 0.5,
-                 linetype = 2,
-                 colour = "#6BA368")+
-      geom_text_repel(aes(label = modalidade, color = modalidade))+
-      labs(x= "
+        subtitle = "Dados para Atletas Masculinos"
+      ) +
+      scale_x_continuous(breaks = seq(10, 50, 2)) +
+      scale_y_continuous(breaks = seq(10, 45, 2)) +
+      theme_stata() +
+      tema_olimpiadas() +
+      annotate("text", x = 44, y = 21.5, label = "Peso Normal") +
+      annotate("text", x = 44, y = 27, label = "Sobrepeso", color = "#6E0D27") +
+      annotate("text", x = 43.5, y = 35.5, label = "Obesidade Grau 1", color = "#6E0D27")
+
+    imc_idade_modalidade_homens
+  } else if (input$sexoidimc == "Female") { # se selecionado Female
+    imc_idade_modalidade_mulheres <- dados_agrupados_brasil |>
+      filter(ano == 2016, sexo == "Female") |>
+      group_by(modalidade) |>
+      mutate(
+        imc = round((peso / (altura / 100 * altura / 100)), 3),
+        media_idade = round(mean(idade, na.rm = TRUE), 2),
+        media_imc = round(mean(imc, na.rm = TRUE), 2)
+      ) |>
+      distinct(modalidade, media_idade, media_imc) |>
+      na.exclude() |>
+      ggplot() +
+      geom_point() +
+      aes(x = media_idade, y = media_imc) +
+      geom_hline(
+        yintercept = 18.6,
+        size = 0.5,
+        linetype = 2,
+        colour = "#6BA368"
+      ) +
+      geom_hline(
+        yintercept = 24.9,
+        size = 0.5,
+        linetype = 2,
+        colour = "#6BA368"
+      ) +
+      geom_text_repel(aes(label = modalidade, color = modalidade)) +
+      labs(
+        x = "
            Idade (anos)", y = "IMC (kg/m2)",
-           title ="Relação de IMC e Idade por Modalidade Esportiva
+        title = "Relação de IMC e Idade por Modalidade Esportiva
            ",
-           subtitle = "Dados para Atletas Femininos") +
-      scale_x_continuous(breaks = seq(18,50,2)) +
-      scale_y_continuous(breaks = seq(18,25,2)) +
-      theme_stata()+
-      tema_olimpiadas()+
-      annotate("text", x=42, y=21.75, label = "Peso Normal")+
-      annotate("text", x=42, y=18.25, label = "Abaixo do Peso", color = "#6E0D27")
-  
-imc_idade_modalidade_mulheres
+        subtitle = "Dados para Atletas Femininos"
+      ) +
+      scale_x_continuous(breaks = seq(18, 50, 2)) +
+      scale_y_continuous(breaks = seq(18, 25, 2)) +
+      theme_stata() +
+      tema_olimpiadas() +
+      annotate("text", x = 42, y = 21.75, label = "Peso Normal") +
+      annotate("text", x = 42, y = 18.25, label = "Abaixo do Peso", color = "#6E0D27")
+
+    imc_idade_modalidade_mulheres
   }
 })
-plotOutput("p3")                                            # saída do gráfico p3
+
+plotOutput("p3") # saída do gráfico p3
 ```
 
 
@@ -734,9 +701,9 @@ Logo, podemos verificar que o índice de massa corpórea (IMC) parece não fazer
 ### O primeiro brasileiro.
 ```{r primeiro_brasileiro}
 #| echo=TRUE
-primeiro_brasileiro <- dados_agrupados_brasil |> 
-  slice_min(order_by = ano) |> 
-  select(nome, idade, modalidade, ano, cidade, evento) |> 
+primeiro_brasileiro <- dados_agrupados_brasil |>
+  slice_min(order_by = ano) |>
+  select(nome, idade, modalidade, ano, cidade, evento) |>
   arrange(ano)
 
 primeiro_brasileiro
@@ -762,7 +729,7 @@ primeiro_brasileiro
 primeiras <- dados_agrupados_brasil |>
   group_by(ano, sexo) |>
   filter(sexo == "Female") |>
-  select(nome, sexo, idade, modalidade, ano, cidade) |> 
+  select(nome, sexo, idade, modalidade, ano, cidade) |>
   arrange(ano) |>
   head(5)
 primeiras
@@ -800,7 +767,7 @@ maiores_medalhistas <- medalhistas_brasil |>
   group_by(nome) |>
   summarise(quantidade = n()) |>
   arrange(desc(quantidade)) |>
-  head(2) |> 
+  head(2) |>
   kbl() |>
   kable_paper(
     full_width = FALSE,
@@ -815,33 +782,32 @@ maiores_medalhistas
 
 ```{r dados_maiores_medalhistas}
 torben <- medalhistas_brasil |>
-  group_by(nome, medalha, evento,cidade, modalidade, ano) |>
+  group_by(nome, medalha, evento, cidade, modalidade, ano) |>
   filter(nome == "Torben Schmidt Grael") |>
-  summarize(nome,medalha) |> 
-  rename("NOME"="nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
+  summarize(nome, medalha) |>
+  rename("NOME" = "nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
 
 scheidt <- medalhistas_brasil |>
-  group_by(nome, medalha, evento,cidade, modalidade, ano) |>
+  group_by(nome, medalha, evento, cidade, modalidade, ano) |>
   filter(nome == "Robert Scheidt") |>
-  summarize(nome, medalha) |> 
-  rename("NOME"="nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
+  summarize(nome, medalha) |>
+  rename("NOME" = "nome", "ANO" = "ano", "MEDALHA" = "medalha", "EVENTO" = "evento")
 
 # Consolidade os resultados em uma tabela para o relatório----------------------------------------------------
 maiores_medalhistas_brasileiros <- bind_rows(torben, scheidt)
-
 ```
 
 ```{r tabela_maiores_medalhistas}
 #| echo=TRUE
-dados_maiores_medalhistas_brasil <- maiores_medalhistas_brasileiros |> 
+dados_maiores_medalhistas_brasil <- maiores_medalhistas_brasileiros |>
   kbl() |>
   kable_paper(
     full_width = TRUE,
     html_font = "cambria",
     font_size = 12,
     position = "center"
-  ) |> 
-  pack_rows("Torben", 1, 5, label_row_css = "background-color:#F5F5F5;color:#71B3EA;") |> 
+  ) |>
+  pack_rows("Torben", 1, 5, label_row_css = "background-color:#F5F5F5;color:#71B3EA;") |>
   pack_rows("Scheidt", 6, 10, label_row_css = "background-color:#F5F5F5;color:#71B3EA;")
 
 dados_maiores_medalhistas_brasil
@@ -873,7 +839,8 @@ medalhas_modalidade <- medalhistas_brasil |>
 
 ```{r medalhas_por_ano}
 inputPanel(
-  "Recorde de medalhas em 2020/2021!!!")
+  "Recorde de medalhas em 2020/2021!!!"
+)
 ```
 
 ```{r grafico_medalhas_edicao_modalidade,}
@@ -893,50 +860,54 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
     shape = "circle",
     colour = "#2D3047",
     alpha = 1
-  )+
+  ) +
   geom_text(aes(label = quantidade),
     hjust = 1, vjust = -0.7
   ) +
-  geom_segment(
-    aes(x = 2000,
-        y= 20,
-        xend = 2006,
-        yend = 17.5),
-    size = 0.3,
-    arrow = arrow(length = unit(0.3, "cm")), colour="#508AA8",
-    inherit.aes=FALSE, lwd=2)+
-  geom_segment(
-    aes(x = 1985,
-        y= 20,
-        xend = 2000,
-        yend = 20),
-    size = 0.5,
-    colour="#508AA8",
-    inherit.aes=FALSE, lwd=2)+
-  coord_cartesian(xlim = c(),ylim = c(0, 24))+
-  annotate("text", x=1958, y=20, label = "*** Selecione acima a aba 'tabela de medalhas' para informação
-           sobre este ponto")+
-  annotate("rect", xmin = 2005, xmax = 2011, ymin = 13, ymax = 19, fill = "#EE304D", alpha = 0.1)+
-  scale_x_continuous(breaks = seq(1896, 2020,4)) +
-  scale_y_continuous(breaks = seq(0,25,2)) +
+  geom_segment(aes(
+    x = 2000,
+    y = 20,
+    xend = 2006,
+    yend = 17.5
+  ),
+  size = 0.3,
+  arrow = arrow(length = unit(0.3, "cm")), colour = "#508AA8",
+  inherit.aes = FALSE, lwd = 2
+  ) +
+  geom_segment(aes(
+    x = 1985,
+    y = 20,
+    xend = 2000,
+    yend = 20
+  ),
+  size = 0.5,
+  colour = "#508AA8",
+  inherit.aes = FALSE, lwd = 2
+  ) +
+  coord_cartesian(xlim = c(), ylim = c(0, 24)) +
+  annotate("text", x = 1958, y = 20, label = "*** Selecione acima a aba 'tabela de medalhas' para informação
+           sobre este ponto") +
+  annotate("rect", xmin = 2005, xmax = 2011, ymin = 13, ymax = 19, fill = "#EE304D", alpha = 0.1) +
+  scale_x_continuous(breaks = seq(1896, 2020, 4)) +
+  scale_y_continuous(breaks = seq(0, 25, 2)) +
   labs(title = "Quantidade de Medalhas por Edição dos Jogos
        ", subtitle = "Total de Medalhas") +
   xlab("Ano") +
   ylab("Quantidade
-       ")+
-  theme_economist()+
-  tema_olimpiadas()+
-  theme(axis.text.x = element_text(angle = 45, hjust = -0.2),
-        axis.title.x = element_text(size = 14, face = "plain"),
-        axis.title.y = element_text(size = 14, face = "plain"))
-
-
+       ") +
+  theme_economist() +
+  tema_olimpiadas() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = -0.2),
+    axis.title.x = element_text(size = 14, face = "plain"),
+    axis.title.y = element_text(size = 14, face = "plain")
+  )
 ```
 
 ```{r texto_desempenho}
 #| echo=FALSE
 output$t2 <- renderText({
-" Foram várias conquistas desde Antuérpia 1920, quando conquistamos nossas três primeiras medalhas. O Brasil participou de 24 olimpíadas, conquistando 150 medalhas.
+  " Foram várias conquistas desde Antuérpia 1920, quando conquistamos nossas três primeiras medalhas. O Brasil participou de 24 olimpíadas, conquistando 150 medalhas.
   A evolução nos últimos quadriênios é destacável. Nas últimas sete olimpíadas, conquistamos 111, ou seja, 74% do total de medalhas."
 })
 textOutput("t2")
@@ -968,7 +939,7 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
     hjust = 1, vjust = -0.7,
     colour = "black"
   ) +
-  coord_cartesian(xlim = c(),ylim = c(0, 16))+
+  coord_cartesian(xlim = c(), ylim = c(0, 16)) +
   labs(
     subtitle = "Medalhas Separadas por Sexo",
     x = "Ano",
@@ -978,16 +949,18 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   scale_x_continuous(breaks = seq(1896, 2020, 4)) +
   scale_y_continuous(breaks = seq(0, 22, 2)) +
   scale_color_manual(values = c("#00A750", "#EE304D")) +
-  theme_economist()+
-  tema_olimpiadas()+
+  theme_economist() +
+  tema_olimpiadas() +
   theme(
     legend.position = "bottom"
-  )+
-  theme(axis.text.x = element_text(angle = 45, hjust = -0.2),
-        axis.title.x = element_text(size = 14, face = "plain"),
-        axis.title.y = element_text(size = 14, face = "plain"),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 16))+
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = -0.2),
+    axis.title.x = element_text(size = 14, face = "plain"),
+    axis.title.y = element_text(size = 14, face = "plain"),
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 16)
+  ) +
   annotate("rect", xmin = 1994, xmax = 2022, ymin = 1, ymax = 16, fill = "#EE304D", alpha = 0.1)
 
 
@@ -998,7 +971,7 @@ medalhas_masculino_feminino
 ```{r texto_desempenho_feminino}
 #| echo=FALSE
 output$t3 <- renderText({
-" Também é notável o crescimento do número de medalhas femininas. Em 1996 foram quatro medalhas das dez conquistadas (25%) e em 2020 foram 9 das 21 (43%)."
+  " Também é notável o crescimento do número de medalhas femininas. Em 1996 foram quatro medalhas das dez conquistadas (25%) e em 2020 foram 9 das 21 (43%)."
 })
 textOutput("t3")
 ```
@@ -1007,7 +980,8 @@ textOutput("t3")
 
 ```{r texto_input_panel}
 inputPanel(
-  "Quantas medalhas em 2008?")
+  "Quantas medalhas em 2008?"
+)
 ```
 
 <br>
@@ -1016,25 +990,25 @@ inputPanel(
 #| echo=TRUE
 kbl(medalhistas_brasil |>
   group_by(ano) |>
-  distinct(evento,medalha) |>
+  distinct(evento, medalha) |>
   summarise(quantidade = n()) |>
-  arrange(desc(ano))) |> 
+  arrange(desc(ano))) |>
   kable_styling(
-     full_width = FALSE,
+    full_width = FALSE,
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
     html_font = "Cambria",
     font_size = 14.5,
     position = "float_right",
     htmltable_class = "NULL",
-  ) 
+  )
 ```
 
 <br>
 
 ```{r sidebarlayout input_ano_output_tabela}
-fluidPage(                                            # uso do shiny para selecionar o ano olímpico
-  sidebarLayout(      # uso do sidebarloyout (input a esquerda e output à direita do interface do usuário)
-    sidebarPanel = sidebarPanel(           # para o input à esquerda da interface
+fluidPage( # uso do shiny para selecionar o ano olímpico
+  sidebarLayout( # uso do sidebarloyout (input a esquerda e output à direita do interface do usuário)
+    sidebarPanel = sidebarPanel( # para o input à esquerda da interface
       shiny::selectInput(
         inputId = "ano",
         label = "Informe o ano da olimpíada",
@@ -1046,32 +1020,36 @@ fluidPage(                                            # uso do shiny para seleci
       "*vide nota1 sobre 2008",
       width = 4
     ),
-    mainPanel = mainPanel(                 # para o output à direita da interface
+    mainPanel = mainPanel( # para o output à direita da interface
       fluidRow(
         column(
           width = 8,
           offset = 3,
-          output$tab2 <- renderTable({
-            medalhas_modalidade_brasil_2016 <- medalhistas_brasil |>
-              group_by(modalidade) |>
-              filter(ano == input$ano) |>
-              select(modalidade, medalha, evento) |>
-              distinct(modalidade, evento, medalha) |>
-              summarise(qtde_modalidades = n())
-            medalhas_modalidade_brasil_2016
-          },
-          align = "r",),
-          output$tab3<- renderTable({
-             quantidade_medalhas <- medalhistas_brasil |>
-              group_by(medalha) |>
-              filter(ano == input$ano) |>
-              select(modalidade, medalha, evento) |>
-              distinct(modalidade, evento, medalha) |>
-              summarise(qtde_medalhas = n())
-             quantidade_medalhas
-          },
-          align = "r",
-          width = "259px")
+          output$tab2 <- renderTable(
+            {
+              medalhas_modalidade_brasil_2016 <- medalhistas_brasil |>
+                group_by(modalidade) |>
+                filter(ano == input$ano) |>
+                select(modalidade, medalha, evento) |>
+                distinct(modalidade, evento, medalha) |>
+                summarise(qtde_modalidades = n())
+              medalhas_modalidade_brasil_2016
+            },
+            align = "r",
+          ),
+          output$tab3 <- renderTable(
+            {
+              quantidade_medalhas <- medalhistas_brasil |>
+                group_by(medalha) |>
+                filter(ano == input$ano) |>
+                select(modalidade, medalha, evento) |>
+                distinct(modalidade, evento, medalha) |>
+                summarise(qtde_medalhas = n())
+              quantidade_medalhas
+            },
+            align = "r",
+            width = "259px"
+          )
         )
       ),
       width = 4
@@ -1096,34 +1074,33 @@ fluidPage(                                            # uso do shiny para seleci
 #| echo=FALSE
 # função que recebe como parâmetro o ano da edição olímpica e retorno o total de medalhas conquistadas
 qtde_medalhas_edicao <- function(edicao) {
-  qtde_medalhas <- medalhistas_brasil |> 
+  qtde_medalhas <- medalhistas_brasil |>
     group_by(medalha) |>
     filter(ano == edicao) |>
-    distinct(evento, modalidade, medalha) |> 
+    distinct(evento, modalidade, medalha) |>
     nrow()
   return(qtde_medalhas)
 }
 
 # atletas por edição olímpica (todos os atletas e não apenas os medalhistas)
 # função que recebe como parâmetro o ano da edição olímpica e retorna o total de atletas na edição
-qtde_atletas_edicao <- function(edicao) {               
-  qtde_atletas <- dados_agrupados_brasil |> 
+qtde_atletas_edicao <- function(edicao) {
+  qtde_atletas <- dados_agrupados_brasil |>
     group_by(nome) |>
-    filter(ano == edicao) |> 
+    filter(ano == edicao) |>
     nrow()
-  return(qtde_atletas)                                   
+  return(qtde_atletas)
 }
-
 ```
 
 ```{r medalha_quantidade_atletas_tibble}
 #| echo=FALSE
 # obter os dados para cada edição olímpica
-qtde_atletas_vetor <- c()                         # cria o vetor total de atletas de uma edição
-qtde_medalhas_vetor <- c()                        # cria o vetor total de medalhas de uma edição
+qtde_atletas_vetor <- c() # cria o vetor total de atletas de uma edição
+qtde_medalhas_vetor <- c() # cria o vetor total de medalhas de uma edição
 
 # laço que alimenta os vetores com os elementos (atletas e medalhas) para cada edição olímpica
-for (i in seq(from = 1896, to = 2020, by = 4)){
+for (i in seq(from = 1896, to = 2020, by = 4)) {
   qtde_atletas_para_vetor <- qtde_atletas_edicao(i)
   qtde_atletas_vetor <- append(qtde_atletas_vetor, qtde_atletas_para_vetor)
   qtde_medalhas_para_vetor <- qtde_medalhas_edicao(i)
@@ -1138,12 +1115,11 @@ qtde_medalhas_vetor <- rev(qtde_medalhas_vetor)
 qtde_medalhas_vetor[29] <- 17
 
 # vetor dos anos dos eventos
-anos_vetor <- seq(from = 1896, to = 2020, by = 4) 
+anos_vetor <- seq(from = 1896, to = 2020, by = 4)
 
-# renomear as variáveis 
-medalhas_atletas <- tibble(anos_vetor, qtde_atletas_vetor, qtde_medalhas_vetor) |> 
+# renomear as variáveis
+medalhas_atletas <- tibble(anos_vetor, qtde_atletas_vetor, qtde_medalhas_vetor) |>
   rename("ANO" = "anos_vetor", "TOTAL_ATLETAS" = "qtde_atletas_vetor", "TOTAL_MEDALHAS" = "qtde_medalhas_vetor")
-
 ```
 
 ```{r medalha_quantidade_atletas_grafico}
@@ -1157,50 +1133,51 @@ medalhas_atletas <- tibble(anos_vetor, qtde_atletas_vetor, qtde_medalhas_vetor) 
 medalhas_atletas <- medalhas_atletas |> # excluir da visualização os anos sem participação do Brasil
   slice(-(1:6))
 
-medalhas_atletas <- medalhas_atletas |> 
-  slice(-(6:7))                         # excluir 1940 e 1944, anos sem jogos por causa da 2º guerra
+medalhas_atletas <- medalhas_atletas |>
+  slice(-(6:7)) # excluir 1940 e 1944, anos sem jogos por causa da 2º guerra
 
-medalhas_atletas |> 
-  ggplot()+
-  aes(x=TOTAL_ATLETAS, y = TOTAL_MEDALHAS)+
-  geom_smooth(method = "lm",
-              fill = "#00A750",
-              alpha = 0.1,
-              size = 1,
-              color = "#FCB32D")+
+medalhas_atletas |>
+  ggplot() +
+  aes(x = TOTAL_ATLETAS, y = TOTAL_MEDALHAS) +
+  geom_smooth(
+    method = "lm",
+    fill = "#00A750",
+    alpha = 0.1,
+    size = 1,
+    color = "#FCB32D"
+  ) +
   geom_point(
     shape = "circle", size = 2.5, colour = "#EE304D", alpha = 1
   ) +
-  geom_text_repel(aes(label = ANO))+
-  coord_cartesian(xlim = c(),ylim = c(0, 23))+
-  scale_x_continuous(breaks = seq(0,600,25)) +
-  scale_y_continuous(breaks = seq(0,24,1)) +
-  labs(title = "Quantidade de Medalha por Atletas
+  geom_text_repel(aes(label = ANO)) +
+  coord_cartesian(xlim = c(), ylim = c(0, 23)) +
+  scale_x_continuous(breaks = seq(0, 600, 25)) +
+  scale_y_continuous(breaks = seq(0, 24, 1)) +
+  labs(
+    title = "Quantidade de Medalha por Atletas
        ",
-       subtitle = "A linha azul indica uma relação direta de proporcionalidade") +
+    subtitle = "A linha azul indica uma relação direta de proporcionalidade"
+  ) +
   xlab("
        Total de Atletas por Edição") +
   ylab("Quantidade de Medalhas
-       ")+
-  theme_tufte()+
-  theme(panel.background = element_rect(fill = "#F3F5F7"),
-        plot.background = element_rect(
-          fill = "#74DCFB",
-          inherit.blank = TRUE
-          ),
-        text = element_text(family = "Rio 2016"),
-        title = element_text(size = 15),
-        legend.position = "none",
-        axis.text.x=element_text(size=11, color = "#000000"),
-        axis.text.y=element_text(size=11, color = "#000000"),
-        axis.title.x = element_text(size = 17,color = "#000000"),
-        axis.title.y = element_text(size = 17,color = "#000000"),
+       ") +
+  theme_tufte() +
+  theme(
+    panel.background = element_rect(fill = "#F3F5F7"),
+    plot.background = element_rect(
+      fill = "#74DCFB",
+      inherit.blank = TRUE
+    ),
+    text = element_text(family = "Rio 2016"),
+    title = element_text(size = 15),
+    legend.position = "none",
+    axis.text.x = element_text(size = 11, color = "#000000"),
+    axis.text.y = element_text(size = 11, color = "#000000"),
+    axis.title.x = element_text(size = 17, color = "#000000"),
+    axis.title.y = element_text(size = 17, color = "#000000"),
     plot.title = element_text(hjust = 0.5, face = "bold", color = "#000000", size = 22)
   )
-  
-
-
- 
 ```
 
 ```{r correlacao_pearson}
@@ -1232,14 +1209,14 @@ Um bom tema para um trabalho futuro de Análise de Dados.
 ```{r display_data}
 #| echo=TRUE,
 #| out.width=20
-dados_agrupados_brasil <- dados_agrupados_brasil |> 
-  select(-time, -evento)                              # excluir as colunas menos relevantes
+dados_agrupados_brasil <- dados_agrupados_brasil |>
+  select(-time, -evento) # excluir as colunas menos relevantes
 
-DT::renderDataTable(dados_agrupados_brasil, 
-                    options = list(
-                      pageLength = 3)
-                    )
-
+DT::renderDataTable(dados_agrupados_brasil,
+  options = list(
+    pageLength = 3
+  )
+)
 ```
 
 <br>
