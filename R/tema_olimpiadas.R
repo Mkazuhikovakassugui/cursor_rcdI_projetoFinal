@@ -23,23 +23,28 @@ tema_olimpiadas <- function(){
     ),
     axis.title.x = element_text(
       size = 17,
-      color = "#000000"
+      color = "#000000",
+      hjust = 0.42
     ),
     axis.title.y = element_text(
       size = 17,
-      color = "#000000"
+      color = "#000000",
+      vjust = 0.5
     ),
     plot.title = element_text(
-      hjust = 0.5,
+      hjust = 0.42,
       face = "bold",
       color = "#000000",
       size = 22
+    ),
+    plot.subtitle = element_text(
+      hjust = 0
     ),
     panel.background = element_rect(
       fill = "#F3F5F7"
     ),
     plot.background = element_rect(
-      fill = "#C1CFD7"
+      fill = "#74DCFB"
     )
   )
 }
@@ -50,10 +55,10 @@ tema_olimpiadas <- function(){
 cores_olimpiadas <- function(variables) {
   scale_fill_manual(
     values = c(
-      "#0085C8",
-      "#F3C200",
-      "#009E3C",
-      "#E00024",
+      "#0082C9",
+      "#FCB32D",
+      "#00A750",
+      "#EE304D",
       "#000000",
       "#2218DE"
     )

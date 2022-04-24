@@ -26,37 +26,19 @@ knitr::opts_chunk$set(
 
 <br>
 
-```{r pacotes}
-#| echo=TRUE
-library(dplyr)
-library(readr)
-library(ggplot2)
-library(knitr)
-library(shiny)
-library(kableExtra)
-library(ggrepel)
-library(here)
-library(gridExtra)
-library(ggthemes)
-library(cowplot)
-library(png)
-source("../R/tema_olimpiadas.R")
 
+```{r knitr, message=FALSE, warning=FALSE}
+#| fig.align = "right",
+#| out.width = "30%",
+
+knitr::include_graphics("https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Olympic_rings_without_rims.svg/1920px-Olympic_rings_without_rims.svg.png")
 ```
 
 # Contextualização
 
-```{r knitr, message=FALSE, warning=FALSE}
-#| fig.align = "right",
-#| out.width = "15%",
-
-knitr::include_graphics("https://upload.wikimedia.org/wikipedia/pt/4/4f/Olympia_2016_-_Rio_%282%29.svg")
-```
-
-
-<div align=justify>O primeiro jogo olímpico da era moderna ocorreu entre 6 de Março e 5 de abril de 1896, em Atenas, e desde então se repetiram em diversas ocasiões premiando os melhores atletas em suas modalidades.
-
-Decidi realizar este trabalho tendo como tema a participação do Brasil nas olimpíadas e como alguns de nossos atletas marcaram suas histórias nestes jogos.
+<br>
+<div align=justify style="text-indent: 3em;"> O primeiro jogo olímpico da era moderna ocorreu entre 6 de Março e 5 de abril de 1896, em Atenas, e desde então se repetiram em diversas ocasiões premiando os melhores atletas em suas modalidades.
+Decidi realizar este trabalho tendo como tema a participação do Brasil nas olimpíadas e como alguns de nossos atletas marcaram suas histórias nestes jogos. 
 
 As linhas que seguirão são direcionadas àqueles que como eu adoram história, esportes e linguagem de programação. Por isto, colocarei partes do código e as constatações obtidas a partir da análise dos dados, complementadas com informações encontradas na internet e que ajudarão a entendê-las dentro de um contexto histórico. As respostas às consultas dos códigos deste relatório, mantê-las-ei no formato apresentado no console do RStudio para que o leitor visualize o resultado do código.
 
@@ -65,19 +47,34 @@ Neste projeto, gostaria de vivenciar a dificuldade que encontramos em nosso dia-
 Para tal, utilizei a base de dados do *Kaggle*, plataforma para competições de *Data Science* fundada por **Antony Goldbom** em 2017, [*"120 Years of Olympic History"*](https://www.kaggle.com/datasets/mysarahmadbhat/120-years-of-olympic-history)" disponibilizada por **Mysar Ahmad Bhat**, acessado em 19 de Março de 2022. 
 
 Este *dataset* fornece os dados dos atletas e dos eventos olímpicos desde sua primeira edição em 1896 até os jogos do Rio de Janeiro em 2016, como nome, idade, peso, altura, país, medalha, modalidade, evento, ano, cidade, entre outros.
-
 Resolvi complementá-lo com os dados dos jogos de Tóquio de 2020 por meio do *dataset*, também do *Kaggle*, [*"Tokyo 2020 Olympic Summer Games"*](https://www.kaggle.com/datasets/piterfm/tokyo-2020-olympics), acessado em 23 de Março de 2022, com os 11 mil atletas que participaram da última edição dos jogos.
 
-O resultado foi uma base de dados preparada com todos os jogos olímpicos de verão da era moderna.</div> <br> <br>
-
-# Carregamento das Bibliotecas
-
+O resultado foi uma base de dados preparada com todos os jogos olímpicos de verão da era moderna.
+</div>
 
 <br>
 
+# Carregamento dos Pacotes
+
+```{r pacotes}
+#| echo = TRUE
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(knitr)
+library(shiny)
+library(kableExtra)
+library(ggrepel)
+library(here)
+library(ggthemes)
+
+source("../R/tema_olimpiadas.R")
+
+```
+
 # Leitura da Base de Dados Preparada
 
-<p align = justify>Podemos visualizar a base de dados e suas variáveis para entender melhor o *dataset*.</p>
+<p align = justify style="text-indent: 4em;">Podemos visualizar a base de dados e suas variáveis para entender melhor o *dataset*.</p>
 
 ```{r carregamento_de_dados}
 #| echo=TRUE
@@ -88,7 +85,7 @@ dados_agrupados |>
   head(3)
 ```
 
-<p align = justify>A base de dados possui `r length(dados_agrupados)` variáveis e `r nrow(dados_agrupados)` linhas, com os dados dos atletas de todas as edições olímpicas de verão. Acima visualizamos apenas as três primeiras linhas.</p>
+<p align = justify style="text-indent: 4em;">A base de dados possui `r length(dados_agrupados)` variáveis e `r nrow(dados_agrupados)` linhas, com os dados dos atletas de todas as edições olímpicas de verão. Acima visualizamos apenas as três primeiras linhas.</p>
 
 <br>
 
@@ -107,9 +104,10 @@ medalhistas_por_tipo <- medalhistas_brasil |>
 
 # Análise
 
-<div align = justify>Vamos começar nossa análise descobrindo quantos atletas brasileiros conquistaram medalhas olímpicas. Consideraremos todos os atletas, sejam de esportes coletivos como futebol ou individuais como o salto em distância.
+<div align = justify style="text-indent: 4em;">Vamos começar nossa análise descobrindo quantos atletas brasileiros conquistaram medalhas olímpicas. Consideraremos todos os atletas, sejam de esportes coletivos como futebol ou individuais como o salto em distância.
 
-No gráfico abaixo, ao selecionar o tipo de medalha na lista de seleção, teremos a quantidade de medalhas obtidas pelos atletas em seus respectivos intervalos de idades por tipo de medalha.</div>
+No gráfico abaixo, ao selecionar o tipo de medalha na lista de seleção, teremos a quantidade de medalhas obtidas pelos atletas em seus respectivos intervalos de idades por tipo de medalha.
+</div>
 
 ```{r select_input tipo_de_medalha}
 inputPanel(                     # uso da biblioteca shiny para o input de dados visto no curso de dashboards
@@ -118,6 +116,7 @@ inputPanel(                     # uso da biblioteca shiny para o input de dados 
 ```
 
 ```{r quantidade_medalhas_por_tipo}
+
 intervalo_classes_idade <- round(seq(0, 70, 10), 1)            # vetor para o intervalo de classes de idade
 medalhistas_ouro <- medalhistas_brasil |>
   filter(medalha == "Gold")                                    # apenas atletas brasileiros com ouro
@@ -314,11 +313,10 @@ textOutput("t1"
 
 ### Quantos anos tinha?
 
-<div align = justify>Peço ao leitor que, neste momento, retorne ao gráfico anterior e selecione "**bronze**" na lista de seleção. Visualizaremos o gráfico dos atletas que conquistaram o bronze por intervalo de idades e notaremos a existência de **"*uma medalha para um dado NA*"**.
+<div align = justify style="text-indent: 4em;"> Peço ao leitor que, neste momento, retorne ao gráfico anterior e selecione "**bronze**" na lista de seleção. Visualizaremos o gráfico dos atletas que conquistaram o bronze por intervalo de idades e notaremos a existência de **"*uma medalha para um dado NA*"**. Este fato nos levará à primeira curiosidade interessante encontrada a partir da análise exploratória desta base de dados.
 
-Este fato nos levará à primeira curiosidade interessante encontrada a partir da análise exploratória desta base de dados.
-
-Pelo código abaixo, veremos que valor NA se deve à existência de um atleta medalhista de bronze, cuja idade não foi informada no *dataset*.</div>
+Pelo código abaixo, veremos que valor NA se deve à existência de um atleta medalhista de bronze, cuja idade não foi informada no *dataset*.
+</div>
 
 ```{r medalhistas_bronze_sem_na}
 #| echo=TRUE
@@ -327,21 +325,24 @@ medalhistas_bronze |>
   select(nome, cidade, ano)
 ```
 
-<div align = justify>Trata-se de **Fernando Soledade**, que foi medalhista em 1920 nos jogos da Antuérpia.
-<p style="color: #7C7287">Segundo o *site* Rede do Esporte,*"encontrar informações sobre o atirador Fernando Soledade tem sido um desafio tanto para os profissionais da Confederação Brasileira de Tiro Esportivo quanto para historiadores que se dedicam a estudar o desempenho dos brasileiros nos Jogos Olímpicos da Antuérpia - 1920. A data de nascimento de Fernando Soledade permanece um mistério. Mas sabe-se que ele era do Rio de Janeiro, onde atuou como médico. Sua marca registrada durante as provas na Antuérpia foi um enorme chapéu de abas, que usava para protegê-lo do sol.*</p>
+<p align = justify style="text-indent: 3em;">Trata-se de **Fernando Soledade**, que foi medalhista em 1920 nos jogos da Antuérpia.</p>
 
-<p style="color: #7C7287">*Sua atuação nos Jogos de 1920 ajudou o Brasil a conquistar a medalha de bronze por equipe e, ao retornar da competição na Bélgica, Fernando Soledade, junto com os demais atletas que defenderam o Brasil na competição, foi saudado pelo Presidente da República Epitácio Pessoa, pelo esportista e poeta Coelho Neto e pelo Presidente do Fluminense Arnaldo Guinle em uma solenidade realizada no Salão Nobre do Fluminense. Pelo desempenho da equipe de tiro na Antuérpia (o país conquistou um ouro, uma prata e um bronze), cada um dos atiradores recebeu uma placa de prata das mãos do presidente."*</p>
+<p align = justify style="color: #7C7287">Segundo o *site* Rede do Esporte,*"encontrar informações sobre o atirador Fernando Soledade tem sido um desafio tanto para os profissionais da Confederação Brasileira de Tiro Esportivo quanto para historiadores que se dedicam a estudar o desempenho dos brasileiros nos Jogos Olímpicos da Antuérpia - 1920. A data de nascimento de Fernando Soledade permanece um mistério. Mas sabe-se que ele era do Rio de Janeiro, onde atuou como médico. Sua marca registrada durante as provas na Antuérpia foi um enorme chapéu de abas, que usava para protegê-lo do sol.*</p>
 
-fonte: <http://rededoesporte.gov.br/pt-br/megaeventos/olimpiadas/medalhistas/fernando-soledade>. <br>
+<p align = justify style="color: #7C7287">*Sua atuação nos Jogos de 1920 ajudou o Brasil a conquistar a medalha de bronze por equipe e, ao retornar da competição na Bélgica, Fernando Soledade, junto com os demais atletas que defenderam o Brasil na competição, foi saudado pelo Presidente da República Epitácio Pessoa, pelo esportista e poeta Coelho Neto e pelo Presidente do Fluminense Arnaldo Guinle em uma solenidade realizada no Salão Nobre do Fluminense. Pelo desempenho da equipe de tiro na Antuérpia (o país conquistou um ouro, uma prata e um bronze), cada um dos atiradores recebeu uma placa de prata das mãos do presidente."*</p>
 
-<p style="color: #7C7287"> Segundo o *Wikipedia*, *"não há informações sobre o que ocorreu com a vida de Soledade após a olimpíada. Por esse motivo, José Roberto Tolero escolheu Soledade como protagonista de 'Ouro, prata , bronze e ... chumbo!', um curta metragem sobre a equipe de tiro que venceu as primeiras medalhas olímpicas brasileiras. Lançado em 2012, o curta tem o formato de um falso documentário filmado por Soledade, interpretado pelo ator Clayton Bonardi."*</p>
+<p>fonte: <http://rededoesporte.gov.br/pt-br/megaeventos/olimpiadas/medalhistas/fernando-soledade>. </p>
 
-fonte: <https://pt.wikipedia.org/wiki/Fernando_Soledade> </div><br>
+<p align = justify style="color: #7C7287""> Segundo o *Wikipedia*, *"não há informações sobre o que ocorreu com a vida de Soledade após a olimpíada. Por esse motivo, José Roberto Tolero escolheu Soledade como protagonista de 'Ouro, prata , bronze e ... chumbo!', um curta metragem sobre a equipe de tiro que venceu as primeiras medalhas olímpicas brasileiras. Lançado em 2012, o curta tem o formato de um falso documentário filmado por Soledade, interpretado pelo ator Clayton Bonardi."*</p>
+
+<p>fonte: <https://pt.wikipedia.org/wiki/Fernando_Soledade></p>
+
+
 <br>
 
 ### O mais jovem.
 
-Continuando nossa análise, vamos sumarizar os dados e então encontrar outras curiosidades sobre os atletas.
+<p align = justify  style="text-indent: 3em;">Continuando nossa análise, vamos sumarizar os dados e então encontrar outras curiosidades sobre os atletas.</p>
 
 ```{r sumário_dados}
 #| echo=TRUE
@@ -354,9 +355,7 @@ summary(dados_agrupados_brasil) |>
   )
 ```
 
-Na coluna **"idade"** da tabela acima, podemos ver que o atleta mais jovem tinha 13 anos de idade.
-
-Podemos descobri-lo usando a função slice_min() do pacote *dplyr* vista no curso.
+<p align = justify  style="text-indent: 3em;">Na coluna **"idade"** da tabela acima, podemos ver que o atleta mais jovem tinha 13 anos de idade. Podemos descobri-lo usando a função slice_min() do pacote *dplyr* vista no curso.</p>
 
 ```{r atleta_mais_baixo}
 #| echo=TRUE
@@ -368,7 +367,8 @@ mais_jovem <- dados_agrupados_brasil |>
 mais_jovem
 ```
 
-**Raíssa Leal** e **Talita de Alencar Rodrigues** são as mais jovens. Abaixo, temos mais informações sobre elas. <br>
+<p align = justify  style="text-indent: 3em;">**Raíssa Leal** e **Talita de Alencar Rodrigues** são as mais jovens. Abaixo, temos mais informações sobre elas.</p> <br>
+
 
 ####  {.tabset .tabset-fade}
 
@@ -388,7 +388,7 @@ fonte: <https://pt.wikipedia.org/wiki/Talita_Rodrigues#:~:text=Com%2013%20anos%2
 
 ### O mais alto e o mais baixo.
 
-<par align = justify>Quando assistimos aos jogos, chama-nos a atenção a estatura dos atletas de basquete e da ginástica olímpica.</par>
+<p align = justify  style="text-indent: 3em;">Quando assistimos aos jogos, chama-nos a atenção a estatura dos atletas de basquete e da ginástica olímpica.</p>
 
 ```{r os_menores}
 #| echo=TRUE
@@ -412,9 +412,10 @@ mais_altoS
 
 ```
 
-<p align = justify>Os jogadores **Paulo Cesar da Silva** (Paulão) e **Paulo Villas Boas de Almeida** (Paulinho Villas Boas), da seleção de basquete, foram os mais altos. As ginastas  **Flávia Lopes Saraiva** e **Daiane Garcia dos Santos**, da seleção olímpica de ginástica artística, as com menor estatura.</p>
+<div align = justify  style="text-indent: 3em;">Os jogadores **Paulo Cesar da Silva** (Paulão) e **Paulo Villas Boas de Almeida** (Paulinho Villas Boas), da seleção de basquete, foram os mais altos. As ginastas  **Flávia Lopes Saraiva** e **Daiane Garcia dos Santos**, da seleção olímpica de ginástica artística, as com menor estatura.
 
 Selecione as abas e os links para ler um pouco mais sobre eles.
+</div>
 
 ####  {.tabset .tabset-fade}
 
@@ -445,14 +446,15 @@ fonte:<https://pt.wikipedia.org/wiki/Daiane_dos_Santos></div>
 <br> <br> 
 
 ### Anatomia e performance.
-<p align = justify>Vimos que em algumas modalidades, como o basquete, os atletas, em sua maioria, possuem características anatômicas predominantes. Mas isto ocorre em todos os esportes? Qual a relação entre anatomia e esporte?</p>
+<p align = justify  style="text-indent: 3em;">Vimos que em algumas modalidades, como o basquete, os atletas, em sua maioria, possuem características anatômicas predominantes. Mas isto ocorre em todos os esportes? Qual a relação entre anatomia e esporte?</p>
 
 <br>
 
 #### Altura, peso e modalidade.
-Podemos verificar a relação altura, peso e modalidade por meio de gráficos de dispersão.
+<div align = justify  style="text-indent: 3em;">Podemos verificar a relação altura, peso e modalidade por meio de gráficos de dispersão.
 
-<p align = justify>Abaixo, temo-las por sexo para os atletas que participaram dos jogos de 2016. Não utilizamos os dados de 2020, porque infelizmente a base "*Tokyo 2020 Olympic Summer Games*" não possui os dados de pesos.</p>
+Abaixo, temo-la por sexo para os atletas que participaram dos jogos de 2016. Não utilizamos os dados de 2020, porque infelizmente a base "*Tokyo 2020 Olympic Summer Games*" não possui os dados de pesos.
+</div>
 
 <br>
 
@@ -519,15 +521,18 @@ output$p2 <- renderPlot({
       Peso Médio (Kg)",
            y = "Altura Média (m)
       ",
-      title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
-      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016
-      ") +
+      title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva
+      ",
+      subtitle = "Dados para Atletas Masculinos dos Jogos Olimpicos de 2016") +
       scale_x_continuous(breaks = seq(40,130,5)) +
       scale_y_continuous(breaks = seq(130,240,5)) +
       theme_stata(
         )+
       tema_olimpiadas(
-        )
+        )+
+      theme(
+        
+      )
     
   peso_altura_modalidade_homens                             # gera o gráfico para o masculino
     
@@ -569,9 +574,9 @@ output$p2 <- renderPlot({
         Peso Médio (Kg)",
         y = "Altura Média (m)
         ",
-        title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva",
-        subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016
-           ") +
+        title ="Relação de Peso Médio e Altura Média por Modalidade Esportiva
+        ",
+        subtitle = "Dados para Atletas Femininas dos Jogos Olimpicos de 2016") +
       scale_x_continuous(
         breaks = seq(40,130,5
                      )
@@ -592,9 +597,9 @@ output$p2 <- renderPlot({
 plotOutput("p2")                                            # saída do gráfico p2
 ```
 
-Qual a importância da anatomia para o desempenho dos atletas?
+<div align = justify  style="text-indent: 3em;">Qual a importância da anatomia para o desempenho dos atletas?
 
-<div align = justify>Segundo o Observatório do Esporte da Secretaria de Estado de Desenvolvimento  Social - SEDESE - do governo de Minas Gerais, no artigo *"A anatomia dos atletas e a influência nas modalidades esportivas"*, características físicas não bastam para a *performance* do atleta. Outros aspectos também são importantes, como a força dos membros inferiores que permitem bons alcances nos ataques e bloqueios dos jogadores de vôlei ou o controle  e técnica dos líberos, que são especializados na defesa.
+Segundo o Observatório do Esporte da Secretaria de Estado de Desenvolvimento  Social - SEDESE - do governo de Minas Gerais, no artigo *"A anatomia dos atletas e a influência nas modalidades esportivas"*, características físicas não bastam para a *performance* do atleta. Outros aspectos também são importantes, como a força dos membros inferiores que permitem bons alcances nos ataques e bloqueios dos jogadores de vôlei ou o controle  e técnica dos líberos, que são especializados na defesa.
 
 Algumas modalidades são mais inclusivas por possuírem diversas categorias como o judô. Do ligeiro ao pesado tem-se atletas de 48 Kg a mais de 150 Kg. Isto posto, podemos entender melhor os gráficos acima.
 
@@ -602,15 +607,19 @@ Os homens da ginástica do trampolim ou os da ginástica artística possuem os m
 
 Observando os dados das atletas femininas, as jogadoras da seleção de voleibol são as mais altas. 
 
-Interessante observar que diferentemente da ginástica artística, na ginástica rítmica as atletas são mais altas. "Elas precisam ser longilíneas, com pernas, braços e mãos longas, quadril e tronco mais curtos que o normal", explica Maria Inês Machado, técnica na delegação de Minas Gerais que disputou os jogos escolares da juventude em 2017.<br> fonte: <https://observatoriodoesporte.mg.gov.br/a-anatomia-dos-atletas-e-a-influencia-nas-modalidades-esportivas/></div>
+Interessante observar que diferentemente da ginástica artística, na ginástica rítmica as atletas são mais altas. "Elas precisam ser longilíneas, com pernas, braços e mãos longas, quadril e tronco mais curtos que o normal", explica Maria Inês Machado, técnica na delegação de Minas Gerais que disputou os jogos escolares da juventude em 2017.<br> 
+</div>
+
+<p>fonte: <https://observatoriodoesporte.mg.gov.br/a-anatomia-dos-atletas-e-a-influencia-nas-modalidades-esportivas/></p>
 
 <br>
 
 #### IMC, idade e modalidade.
 
-E como seria a relação entre o índice de massa corpórea, a idade e a modalidade dos atletas?
+<div align = justify  style="text-indent: 3em;">E como seria a relação entre o índice de massa corpórea, a idade e a modalidade dos atletas?
 
 Com **distorções**. Observe-as nos gráficos.
+</div>
 
 <br>
 
@@ -660,9 +669,9 @@ output$p3 <- renderPlot({
       geom_text_repel(aes(label = modalidade, color = modalidade))+
       labs(x= "
            Idade (anos)", y = expression(IMC~(kg/m^2)),
-           title ="Relação de IMC e Idade por Modalidade Esportiva",
-           subtitle = "Dados para Atletas Masculinos
-           ") +
+           title ="Relação de IMC e Idade por Modalidade Esportiva
+           ",
+           subtitle = "Dados para Atletas Masculinos") +
       scale_x_continuous(breaks = seq(10,50,2)) +
       scale_y_continuous(breaks = seq(10,45,2)) +
       theme_stata()+
@@ -696,9 +705,9 @@ imc_idade_modalidade_homens
       geom_text_repel(aes(label = modalidade, color = modalidade))+
       labs(x= "
            Idade (anos)", y = "IMC (kg/m2)",
-           title ="Relação de IMC e Idade por Modalidade Esportiva",
-           subtitle = "Dados para Atletas Femininos
-           ") +
+           title ="Relação de IMC e Idade por Modalidade Esportiva
+           ",
+           subtitle = "Dados para Atletas Femininos") +
       scale_x_continuous(breaks = seq(18,50,2)) +
       scale_y_continuous(breaks = seq(18,25,2)) +
       theme_stata()+
@@ -713,11 +722,12 @@ plotOutput("p3")                                            # saída do gráfico
 ```
 
 
-<div align = justify>No masculino, modalidades como canoagem, handebol, basquete, pólo aquático, rugbi e judô teriam seus atletas com sobrepeso e as modalidades de *"wrestling"* (luta greco-romana e luta livre) e levantamento de peso como "obesidade de grau 1". 
+<div align = justify  style="text-indent: 3em;">No masculino, modalidades como canoagem, handebol, basquete, pólo aquático, rugbi e judô teriam seus atletas com sobrepeso e as modalidades de *"wrestling"* (luta greco-romana e luta livre) e levantamento de peso como "obesidade de grau 1". 
 
 No feminino, embora quase todas as atletas estivessem  com o IMC normal, as da ginástica rítmica e do *taekwondo* seriam classificadas como "abaixo do peso".
 
-Logo, podemos verificar que o índice de massa corpórea (IMC) parece não fazer sentido quando avaliado em atletas, principalmente por não considerar a percentagem de massa muscular.</div>
+Logo, podemos verificar que o índice de massa corpórea (IMC) parece não fazer sentido quando avaliado em atletas, principalmente por não considerar a percentagem de massa muscular.
+</div>
 
 <br>
 
@@ -731,7 +741,7 @@ primeiro_brasileiro <- dados_agrupados_brasil |>
 
 primeiro_brasileiro
 ```
-<div align = justify>Quando analisei a primeira participação brasileira nos jogos olímpicos, encontrei dados de Adolphe Christiano Klingelhoefer. Entretanto, a primeira participação do Brasil com o comite olímpico brasileiro (COB) foi em 1920, pois o COB foi criado em 1914. 
+<p align = justify  style="text-indent: 3em;">Quando analisei a primeira participação brasileira nos jogos olímpicos, encontrei dados de Adolphe Christiano Klingelhoefer. Entretanto, a primeira participação do Brasil com o comite olímpico brasileiro (COB) foi em 1920, pois o COB foi criado em 1914. </p>
 
 <p style="color: #7C7287">De acordo com a reportagem do Globo Esporte, Adolphe Christiano Klingelhoefer com vinte anos participou dos jogos de Paris. Nascido em 2 de maio de 1880 na França, foi filho de um vice-cônsul brasileiro. </p>
 
@@ -760,7 +770,9 @@ primeiras
 
 ####  {.tabset .tabset-fade}
 
-<p align = justify>Maria Emma Hulda Lenk Ziegler foi a primeira atleta da natação a competir em uma edição olímpica. Maria Lenk, Piedade Coutinho Tavares da Silva, Helena de Moraes Salles, entre outras, também marcaram suas passagens na história como as primeiras mulheres da natação a representar nosso país. Maria Lenk e Piedade Coutinho tiveram uma destacada carreira internacional, conquistando vários títulos.</p>
+<div align = justify  style="text-indent: 3em;">Maria Emma Hulda Lenk Ziegler foi a primeira atleta da natação a competir em uma edição olímpica. Maria Lenk, Piedade Coutinho Tavares da Silva, Helena de Moraes Salles, entre outras, também marcaram suas passagens na história como as primeiras mulheres da natação a representar nosso país. 
+
+Maria Lenk e Piedade Coutinho tiveram uma destacada carreira internacional, conquistando vários títulos.</div>
 
 ##### Maria Emma Hulda Lenk Ziegler
 
@@ -865,7 +877,7 @@ inputPanel(
 ```
 
 ```{r grafico_medalhas_edicao_modalidade,}
-#| fig.height=5,
+#| fig.height=4,
 #| fig.width = 10,
 #| fig.align="center",
 #| echo=FALSE
@@ -927,7 +939,7 @@ textOutput("t2")
 ```
 
 ```{r grafico_medalhas_edicao_modalidade_sexo,}
-#| fig.height=5,
+#| fig.height=4,
 #| fig.width = 10,
 #| fig.align="center",
 #| echo=FALSE
@@ -966,7 +978,8 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   theme_economist()+
   tema_olimpiadas()+
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    
   )
 
 
@@ -974,8 +987,6 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
 grafico_medalhas_modalidade
 medalhas_masculino_feminino
 ```
-
-<br>
 
 ```{r texto_desempenho_feminino}
 #| echo=FALSE
@@ -1072,7 +1083,7 @@ fluidPage(                                            # uso do shiny para seleci
 
 ### Quantidade de atletas e quantidade de medalhas conquistadas.
 
-<p align = justify>Nas últimas Olimpíadas conquistamos mais de 70% do total de medalhas. Existiria relação entre a quantidade de atletas participantes por evento e a quantidade de medalhas obtidas por edição olímpica?</p>
+<p align = justify  style="text-indent: 3em;">Nas últimas Olimpíadas conquistamos mais de 70% do total de medalhas. Existiria relação entre a quantidade de atletas participantes por evento e a quantidade de medalhas obtidas por edição olímpica?</p>
 
 ```{r medalhas_quantidade _tletas}
 #| echo=FALSE
@@ -1154,15 +1165,15 @@ medalhas_atletas |>
   coord_cartesian(xlim = c(),ylim = c(0, 23))+
   scale_x_continuous(breaks = seq(0,600,25)) +
   scale_y_continuous(breaks = seq(0,24,1)) +
-  labs(title = "Quantidade de Medalha por Atletas",
-       subtitle = "A linha azul indica uma relação direta de proporcionalidade
-       ") +
+  labs(title = "Quantidade de Medalha por Atletas
+       ",
+       subtitle = "A linha azul indica uma relação direta de proporcionalidade") +
   xlab("
        Total de Atletas por Edição") +
   ylab("Quantidade de Medalhas
        ")+
   theme_tufte()+
-  theme(panel.background = element_rect(fill = "#C1CFD7"),
+  theme(panel.background = element_rect(fill = "#74DCFB"),
         text = element_text(family = "Rio 2016"),
         title = element_text(size = 15),
         legend.position = "none",
@@ -1191,15 +1202,18 @@ coef_correlacao <- cor(medalhas_atletas$TOTAL_ATLETAS, medalhas_atletas$TOTAL_ME
 coef_correlacao
 ```
 
-<div align = justify>Observa-se que quanto maior o número de atletas nas delegações brasileiras, maiores também foram as quantidades de medalhas obtidas. Entretanto, imagino que outros fatores como o produto interno bruto do país, ou o índice de desenvolvimento humano, ou o número de habitantes, ou a política pública para os esportes, ou a prática esportiva nas escolas também exerçam forte influência na quantidade de medalhas obtidas. 
+<div align = justify  style="text-indent: 3em;">Observa-se que quanto maior o número de atletas nas delegações brasileiras, maiores também foram as quantidades de medalhas obtidas. 
 
-Um bom tema para um trabalho futuro de Análise de Dados.</div>
+Entretanto, imagino que outros fatores como o produto interno bruto do país, ou o índice de desenvolvimento humano, ou o número de habitantes, ou a política pública para os esportes, ou a prática esportiva nas escolas também exerçam forte influência na quantidade de medalhas obtidas. 
+
+Um bom tema para um trabalho futuro de Análise de Dados.
+</div>
 
 <br>
 
 ## Para consultas rápidas
 
-<div align = justify>Abaixo, disponibilizamos uma tabela para consulta rápida dos dados dos atletas brasileiros que participaram de um ou mais evento olímpico a partir de uma palavra chave. Assim, é possível encontrar as informações dos atletas que citamos neste relatório.</div>
+<p align = justify  style="text-indent: 3em;">Abaixo, disponibilizamos uma tabela para consulta rápida dos dados dos atletas brasileiros que participaram de um ou mais evento olímpico a partir de uma palavra chave. Assim, é possível encontrar as informações dos atletas que citamos neste relatório.</p>
 
 ```{r display_data}
 #| echo=TRUE,
@@ -1225,15 +1239,16 @@ DT::renderDataTable(dados_agrupados_brasil,
 
 # Conclusão
 
-<div align = justify>Neste trabalho, procurei reproduzir as dificuldades que encontramos quando analisamos um fato ou um problema e precisamos encontrar ou coletar os dados, prepará-los, descrevê-los, explorá-los, entendê-los e por fim apresentar as respostas às questões que nos conduzem à solução do problema ou ao entendimento do fato.
+<div align = justify  style="text-indent: 3em;">Neste trabalho, procurei reproduzir as dificuldades que encontramos quando analisamos um fato ou um problema e precisamos encontrar ou coletar os dados, prepará-los, descrevê-los, explorá-los, entendê-los e por fim apresentar as respostas às questões que nos conduzem à solução do problema ou ao entendimento do fato.
 
 Para que isto fosse possível, foi necessário o estudo e o uso das ferramentas aprendidas no Curso de Linguagem R para Ciência de Dados I. 
 
-Importei a base de dados e complementei-a com outras bases, realizei a manipulação por meio das funções do pacote *tidyverse* que permitiram agrupar, filtrar, selecionar, ordenar, criar e excluir dados e visualizei os resultados com os gráficos construídos a partir das funções do pacote *ggplot2*. Todas estas ferramentas foram abordadas no curso e permitiram gerar informações a partir dos dados brutos do *dataset*,  possibilitando que, ao longo da análise exploratória, eu entendesse estas informações e respondesse às questões levantadas em cada tópico, relembrando os grandes feitos e as curiosidade de nossos atletas e apresentando este relatório em RMarkdown.
+Importei a base de dados e complementei-a com outras bases, realizei a manipulação por meio das funções do pacote *tidyverse* que permitiram agrupar, filtrar, selecionar, ordenar, criar e excluir dados, bem como visualizei os resultados com os gráficos construídos a partir das funções do pacote *ggplot2*. Todas estas ferramentas foram abordadas no curso e permitiram gerar informações a partir dos dados brutos do *dataset*,  possibilitando que, ao longo da análise exploratória, eu entendesse estas informações e respondesse às questões levantadas em cada tópico, relembrando os grandes feitos e as curiosidade de nossos atletas e apresentando este relatório em RMarkdown.
 
 Espero que a leitura tenha sido agradável.
 
-Aguardemos, então, as Olimpíadas de Paris, 2024, com novos fatos, dados e conquistas.</div>
+Aguardemos, então, as Olimpíadas de Paris, 2024, com novos fatos, dados e conquistas.
+</div>
 
 <br> <br> <br>
 
