@@ -44,7 +44,8 @@ tema_olimpiadas <- function(){
       fill = "#F3F5F7"
     ),
     plot.background = element_rect(
-      fill = "#74DCFB"
+      fill = "#74DCFB",
+      inherit.blank = TRUE
     )
   )
 }

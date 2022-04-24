@@ -160,9 +160,9 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       geom_label(
         size = 4, 
-        alpha = 0.5,
+        alpha = 0,
         nudge_y = 7, 
-        show.legend = FALSE
+        show.legend = FALSE,
         ) +
       cores_olimpiadas(
         ) +
@@ -203,7 +203,7 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       geom_label(
         size = 4, 
-        alpha = 0.5,
+        alpha = 0.0,
         nudge_y = 7, 
         show.legend = FALSE
         ) +
@@ -243,9 +243,9 @@ output$p1 <- renderPlot({                                      # uso do shiny pa
         ) +
       geom_label(
         size = 4, 
-        alpha = 0.5,
+        alpha = 0.0,
         nudge_y = 7,
-        show.legend = FALSE
+        show.legend = FALSE,
         ) +
       cores_olimpiadas(
         ) +
@@ -315,7 +315,7 @@ textOutput("t1"
 
 <div align = justify style="text-indent: 4em;"> Peço ao leitor que, neste momento, retorne ao gráfico anterior e selecione "**bronze**" na lista de seleção. Visualizaremos o gráfico dos atletas que conquistaram o bronze por intervalo de idades e notaremos a existência de **"*uma medalha para um dado NA*"**. Este fato nos levará à primeira curiosidade interessante encontrada a partir da análise exploratória desta base de dados.
 
-Pelo código abaixo, veremos que valor NA se deve à existência de um atleta medalhista de bronze, cuja idade não foi informada no *dataset*.
+Pelo código abaixo, veremos que o valor NA se deve à existência de um atleta medalhista de bronze, cuja idade não foi informada no *dataset*.
 </div>
 
 ```{r medalhistas_bronze_sem_na}
@@ -676,9 +676,9 @@ output$p3 <- renderPlot({
       scale_y_continuous(breaks = seq(10,45,2)) +
       theme_stata()+
       tema_olimpiadas()+
-      annotate("text", x=44, y=21.5, label = "Peso Normal")+
-      annotate("text", x=44, y=27, label = "Sobrepeso")+
-      annotate("text", x=43.5, y=35.5, label = "Obesidade Grau 1")
+      annotate("text", x=44, y=21.5, label = "Peso Normal" )+
+      annotate("text", x=44, y=27, label = "Sobrepeso", color = "#6E0D27")+
+      annotate("text", x=43.5, y=35.5, label = "Obesidade Grau 1", color = "#6E0D27", face = "bold")
   
 imc_idade_modalidade_homens
 }
@@ -713,7 +713,7 @@ imc_idade_modalidade_homens
       theme_stata()+
       tema_olimpiadas()+
       annotate("text", x=42, y=21.75, label = "Peso Normal")+
-      annotate("text", x=42, y=18.25, label = "Abaixo do Peso")
+      annotate("text", x=42, y=18.25, label = "Abaixo do Peso", color = "#6E0D27")
   
 imc_idade_modalidade_mulheres
   }
@@ -887,11 +887,12 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
   ggplot(aes(x = ano, y = quantidade, label = ano)) +
   geom_line(
     size = 1,
-    colour = "#54C6EB"
+    colour = "#FCB32D"
   ) +
   geom_point(
     shape = "circle",
-    colour = "#2D3047"
+    colour = "#2D3047",
+    alpha = 1
   )+
   geom_text(aes(label = quantidade),
     hjust = 1, vjust = -0.7
@@ -915,16 +916,19 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
   coord_cartesian(xlim = c(),ylim = c(0, 24))+
   annotate("text", x=1958, y=20, label = "*** Selecione acima a aba 'tabela de medalhas' para informação
            sobre este ponto")+
+  annotate("rect", xmin = 2005, xmax = 2011, ymin = 13, ymax = 19, fill = "#EE304D", alpha = 0.1)+
   scale_x_continuous(breaks = seq(1896, 2020,4)) +
-  scale_y_continuous(breaks = seq(0,25,1)) +
+  scale_y_continuous(breaks = seq(0,25,2)) +
   labs(title = "Quantidade de Medalhas por Edição dos Jogos
        ", subtitle = "Total de Medalhas") +
-  xlab("
-       Ano") +
+  xlab("Ano") +
   ylab("Quantidade
        ")+
   theme_economist()+
-  tema_olimpiadas()
+  tema_olimpiadas()+
+  theme(axis.text.x = element_text(angle = 45, hjust = -0.2),
+        axis.title.x = element_text(size = 14, face = "plain"),
+        axis.title.y = element_text(size = 14, face = "plain"))
 
 
 ```
@@ -967,21 +971,24 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   coord_cartesian(xlim = c(),ylim = c(0, 16))+
   labs(
     subtitle = "Medalhas Separadas por Sexo",
-    x = "
-    Ano",
+    x = "Ano",
     y = "Quantidade
     "
   ) +
   scale_x_continuous(breaks = seq(1896, 2020, 4)) +
-  scale_y_continuous(breaks = seq(0, 22, 1)) +
-  scale_color_manual(values = c("#8AFFC1", "#554971")) +
+  scale_y_continuous(breaks = seq(0, 22, 2)) +
+  scale_color_manual(values = c("#00A750", "#EE304D")) +
   theme_economist()+
   tema_olimpiadas()+
   theme(
-    legend.position = "bottom",
-    
-  )
-
+    legend.position = "bottom"
+  )+
+  theme(axis.text.x = element_text(angle = 45, hjust = -0.2),
+        axis.title.x = element_text(size = 14, face = "plain"),
+        axis.title.y = element_text(size = 14, face = "plain"),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 16))+
+  annotate("rect", xmin = 1994, xmax = 2022, ymin = 1, ymax = 16, fill = "#EE304D", alpha = 0.1)
 
 
 grafico_medalhas_modalidade
@@ -1157,9 +1164,12 @@ medalhas_atletas |>
   ggplot()+
   aes(x=TOTAL_ATLETAS, y = TOTAL_MEDALHAS)+
   geom_smooth(method = "lm",
-              fill = "#49606F")+
+              fill = "#00A750",
+              alpha = 0.1,
+              size = 1,
+              color = "#FCB32D")+
   geom_point(
-    shape = "circle", size = 2.5, colour = "#508AA8"
+    shape = "circle", size = 2.5, colour = "#EE304D", alpha = 1
   ) +
   geom_text_repel(aes(label = ANO))+
   coord_cartesian(xlim = c(),ylim = c(0, 23))+
@@ -1173,7 +1183,11 @@ medalhas_atletas |>
   ylab("Quantidade de Medalhas
        ")+
   theme_tufte()+
-  theme(panel.background = element_rect(fill = "#74DCFB"),
+  theme(panel.background = element_rect(fill = "#F3F5F7"),
+        plot.background = element_rect(
+          fill = "#74DCFB",
+          inherit.blank = TRUE
+          ),
         text = element_text(family = "Rio 2016"),
         title = element_text(size = 15),
         legend.position = "none",
