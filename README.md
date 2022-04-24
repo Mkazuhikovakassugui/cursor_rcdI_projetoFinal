@@ -9,6 +9,7 @@ permitem a realização de manipulação de dados, construção de
 visualizações gráficas e leitura de bases. A apresentação dos resultados
 é realizada por meio de um relatório em formato .Rmd (RMarkdown).
 
+
 > Status: Concluído
 
 ## Campos do projeto/trabalho
@@ -25,14 +26,16 @@ visualizações gráficas e leitura de bases. A apresentação dos resultados
 
 ## Pacotes Utilizados
 
--   *Dplyr*
--   *readr*
--   *ggplot2*
--   *knitr*
--   *shiny*
--   *kableExtra*
--   *ggrepel*
--   *here*
+- *library(dplyr)*
+- *library(readr)*
+- *library(ggplot2)*
+- *library(knitr)*
+- *library(shiny)*
+- *library(kableExtra)*
+- *library(ggrepel)*
+- *library(here)*
+- *library(ggthemes)*
+
 
 ## Contato
 
