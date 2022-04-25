@@ -1156,7 +1156,7 @@ medalhas_atletas |>
   labs(
     title = "Quantidade de Medalha por Atletas
        ",
-    subtitle = "A linha azul indica uma relação direta de proporcionalidade"
+    subtitle = "A linha amarela indica uma relação direta de proporcionalidade"
   ) +
   xlab("
        Total de Atletas por Edição") +
