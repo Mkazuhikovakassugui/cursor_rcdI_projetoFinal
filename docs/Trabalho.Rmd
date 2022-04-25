@@ -901,7 +901,8 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
   theme(
     axis.text.x = element_text(angle = 45, hjust = -0.2),
     axis.title.x = element_text(size = 14, face = "plain"),
-    axis.title.y = element_text(size = 14, face = "plain")
+    axis.title.y = element_text(size = 14, face = "plain"),
+    plot.title = element_text(size = 19)
   )
 ```
 
