@@ -1154,7 +1154,7 @@ medalhas_atletas |>
   scale_x_continuous(breaks = seq(0, 600, 25)) +
   scale_y_continuous(breaks = seq(0, 24, 1)) +
   labs(
-    title = "Quantidade de Medalha por Atletas
+    title = "Quantidade de Medalhas por Atletas
        ",
     subtitle = "A linha amarela indica uma relação direta de proporcionalidade"
   ) +
