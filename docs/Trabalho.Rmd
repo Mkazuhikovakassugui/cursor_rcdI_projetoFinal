@@ -711,15 +711,15 @@ primeiro_brasileiro
 ```
 <p align = justify  style="text-indent: 3em;">Quando analisei a primeira participação brasileira nos jogos olímpicos, encontrei dados de Adolphe Christiano Klingelhoefer. Entretanto, a primeira participação do Brasil com o comite olímpico brasileiro (COB) foi em 1920, pois o COB foi criado em 1914. </p>
 
-<p style="color: #7C7287">De acordo com a reportagem do Globo Esporte, Adolphe Christiano Klingelhoefer com vinte anos participou dos jogos de Paris. Nascido em 2 de maio de 1880 na França, foi filho de um vice-cônsul brasileiro. </p>
+<dav align = justify><p style="color: #7C7287">De acordo com a reportagem do Globo Esporte, Adolphe Christiano Klingelhoefer com vinte anos participou dos jogos de Paris. Nascido em 2 de maio de 1880 na França, foi filho de um vice-cônsul brasileiro. </p>
 
-<p style="color: #7C7287">Naquele tempo, o artigo 6º da Constituição de 1824 dizia que *"são cidadãos brasileiros os filhos de pai brasileiro, que estiverem em país estrangeiro em serviço do Império, embora não venham estabelecer domicílio no Brasil"*</p>
+<dav align = justify><p style="color: #7C7287">Naquele tempo, o artigo 6º da Constituição de 1824 dizia que *"são cidadãos brasileiros os filhos de pai brasileiro, que estiverem em país estrangeiro em serviço do Império, embora não venham estabelecer domicílio no Brasil"*</p>
 
-<p style="color: #7C7287">De posse de sua nacionalidade brasileira, Adolphe competiu na Olimpíada de Paris nas provas de atletismo de 60 metros, 200 metros e nos 110 metros com barreira, mas não avançou para as finais em nenhuma delas.</p>
+<dav align = justify><p style="color: #7C7287">De posse de sua nacionalidade brasileira, Adolphe competiu na Olimpíada de Paris nas provas de atletismo de 60 metros, 200 metros e nos 110 metros com barreira, mas não avançou para as finais em nenhuma delas.</p>
 
-<p style="color: #7C7287">Segundo o Comitê Olímpico Internacional (COI), *"um atleta brasileiro (e não o Brasil) competiu nas Olimpíadas de 1900 sob as cores de um clube francês*.</p>
+<dav align = justify><p style="color: #7C7287">Segundo o Comitê Olímpico Internacional (COI), *"um atleta brasileiro (e não o Brasil) competiu nas Olimpíadas de 1900 sob as cores de um clube francês*.</p>
 
-<dav align = justify><p>fonte: https://interativos.globoesporte.globo.com/olimpiadas/materia/adolphe </p></dav>
+<dav align = justify><p style="color: #7C7287"><p>fonte: https://interativos.globoesporte.globo.com/olimpiadas/materia/adolphe </p></dav>
 
 <br>
 
@@ -900,8 +900,8 @@ grafico_medalhas_modalidade <- medalhas_modalidade |>
   tema_olimpiadas() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = -0.2),
-    axis.title.x = element_text(size = 14, face = "plain"),
-    axis.title.y = element_text(size = 14, face = "plain"),
+    axis.title.x = element_text(size = 16, face = "plain"),
+    axis.title.y = element_text(size = 16, face = "plain"),
     plot.title = element_text(size = 19)
   )
 ```
@@ -958,8 +958,8 @@ medalhas_masculino_feminino <- medalhistas_brasil |>
   ) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = -0.2),
-    axis.title.x = element_text(size = 14, face = "plain"),
-    axis.title.y = element_text(size = 14, face = "plain"),
+    axis.title.x = element_text(size = 16, face = "plain"),
+    axis.title.y = element_text(size = 16, face = "plain"),
     legend.text = element_text(size = 12),
     legend.title = element_text(size = 16)
   ) +
