@@ -1165,7 +1165,7 @@ medalhas_atletas |>
       fill = "#74DCFB",
       inherit.blank = TRUE
     ),
-    text = element_text(family = "Arial"),
+    text = element_text(family = ""),
     title = element_text(size = 15),
     legend.position = "none",
     axis.text.x = element_text(size = 11, color = "#000000"),
