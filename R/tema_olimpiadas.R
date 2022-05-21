@@ -9,7 +9,7 @@
 tema_olimpiadas <- function() {
   theme(
     text = element_text(
-      family = "Rio 2016"
+      family = "Arial"
     ),                                              
     title = element_text(
       size = 15

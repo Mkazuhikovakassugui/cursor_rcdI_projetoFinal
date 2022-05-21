@@ -323,30 +323,24 @@ medalhistas_bronze |>
 
 ### O mais jovem.
 
-<p align = justify  style="text-indent: 3em;">Continuando nossa análise, vamos sumarizar os dados e então encontrar outras curiosidades sobre os atletas.</p>
+<p align = justify  style="text-indent: 3em;">Continuando nossa análise, vamos ver a idade dos atletas.</p>
 
 ```{r sumário_dados}
 #| echo=TRUE
-summary(dados_agrupados_brasil) |>
+dados_agrupados_brasil |>
+  group_by(idade) |> 
+  summarise(idade, nome, sexo, time, noc, idade, modalidade, evento) |> 
+  arrange(idade) |> 
+  head(n=10) |> 
   kbl() |>
   kable_classic(
-    full_width = FALSE,
-    html_font = "Cambria",
-    font_size = 10
+    full_width = TRUE,
+    html_font = "Arial",
+    font_size = 12
   )
 ```
 
-<p align = justify  style="text-indent: 3em;">Na coluna **"idade"** da tabela acima, podemos ver que o atleta mais jovem tinha 13 anos de idade. Podemos descobri-lo usando a função slice_min() do pacote *dplyr* vista no curso.</p>
-
-```{r atleta_mais_baixo}
-#| echo=TRUE
-mais_jovem <- dados_agrupados_brasil |>
-  slice_min(order_by = idade) |>
-  select(nome, idade, modalidade, ano, cidade) |>
-  arrange(idade)
-
-mais_jovem
-```
+<p align = justify  style="text-indent: 3em;">Na coluna **"idade"** da tabela acima, podemos ver que o atleta mais jovem tinha 13 anos de idade.</p>
 
 <p align = justify  style="text-indent: 3em;">**Raíssa Leal** e **Talita de Alencar Rodrigues** são as mais jovens. Abaixo, temos mais informações sobre elas.</p> <br>
 
@@ -773,7 +767,7 @@ maiores_medalhistas <- medalhistas_brasil |>
   kable_paper(
     full_width = FALSE,
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    html_font = "Cambria",
+    html_font = "Arial",
     font_size = 14,
     position = "left"
   )
@@ -804,7 +798,7 @@ dados_maiores_medalhistas_brasil <- maiores_medalhistas_brasileiros |>
   kbl() |>
   kable_paper(
     full_width = TRUE,
-    html_font = "cambria",
+    html_font = "Arial",
     font_size = 12,
     position = "center"
   ) |>
@@ -998,7 +992,7 @@ kbl(medalhistas_brasil |>
   kable_styling(
     full_width = FALSE,
     bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    html_font = "Cambria",
+    html_font = "Arial",
     font_size = 14.5,
     position = "float_right",
     htmltable_class = "NULL",
@@ -1171,7 +1165,7 @@ medalhas_atletas |>
       fill = "#74DCFB",
       inherit.blank = TRUE
     ),
-    text = element_text(family = "Rio 2016"),
+    text = element_text(family = "Arial"),
     title = element_text(size = 15),
     legend.position = "none",
     axis.text.x = element_text(size = 11, color = "#000000"),
