@@ -323,13 +323,13 @@ medalhistas_bronze |>
 
 ### O mais jovem.
 
-<p align = justify  style="text-indent: 3em;">Continuando nossa análise, vamos ver a idade dos atletas.</p>
+<p align = justify  style="text-indent: 3em;">Continuando nossa análise, vamos ver a idade dos atletas mais jovens.</p>
 
 ```{r sumário_dados}
 #| echo=TRUE
 dados_agrupados_brasil |>
   group_by(idade) |> 
-  summarise(idade, nome, sexo, time, noc, idade, modalidade, evento) |> 
+  summarise(idade, nome, sexo, time, cidade, idade, modalidade, evento) |> 
   arrange(idade) |> 
   head(n=10) |> 
   kbl() |>
